@@ -19,7 +19,7 @@ public class Main {
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
 
-            InputStream in = clientSocket.getInputStream());
+            InputStream in = clientSocket.getInputStream();
             OutputStream out = clientSocket.getOutputStream();
 
             byte[] buffer = new byte[1024];
