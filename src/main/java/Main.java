@@ -19,11 +19,14 @@ public class Main {
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
 
-            BufferedReader buffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            InputStream in = clientSocket.getInputStream());
             OutputStream out = clientSocket.getOutputStream();
 
-            System.out.println("====================================================================");
-            while(buffer.readLine() != null){
+            byte[] buffer = new byte[1024];
+            while(true){
+                int read = in.read(buffer);
+                if(read == -1) break;
+
                 out.write("+PONG\r\n".getBytes());
             }
             System.out.println("====================================================================");
