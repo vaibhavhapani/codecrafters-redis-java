@@ -28,8 +28,9 @@ public class Main {
                 if(read == -1) break;
 
                 out.write("+PONG\r\n".getBytes());
+                out.flush();
             }
-            System.out.println("====================================================================");
+
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
