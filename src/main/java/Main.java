@@ -82,9 +82,9 @@ public class Main {
                                     if(expiryType.equalsIgnoreCase("PX")) {
                                         Long expiryTime = Long.parseLong(command.get(5));
                                         expiry.put(key, expiryTime);
+                                        System.out.println("Expiry set for key: " + key + " is: " + expiryTime);
                                     }
                                 }
-
                                 out.write("+OK\r\n".getBytes());
                             } else {
                                 out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
@@ -94,6 +94,7 @@ public class Main {
                             if(command.size() > 1){
                                 String key = command.get(1);
                                 if(store.containsKey(key)) {
+                                    System.out.println("Current time: " + System.currentTimeMillis());
                                     if(expiry.get(key) == null || expiry.get(key) >= System.currentTimeMillis()) {
                                         String value = store.get(key);
                                         String response = "$" + value.length() + "\r\n" + value + "\r\n";
