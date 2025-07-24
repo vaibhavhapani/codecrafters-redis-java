@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
-    private static Map<String, String> map = new HashMap<>();
+    private static final Map<String, String> store = new HashMap<>();
+    private static final Map<String, Long> expiry = new HashMap<>();
 
     public static void main(String[] args) {
         int port = 6379;
@@ -71,10 +72,19 @@ public class Main {
                             }
                             break;
                         case "SET":
-                            if(command.size() > 1){
+                            if(command.size() >= 3){
                                 String key = command.get(1);
                                 String value = command.get(2);
-                                map.put(key, value);
+                                store.put(key, value);
+
+                                if(command.size() > 3) {
+                                    String expiryType = command.get(4);
+                                    if(expiryType.equalsIgnoreCase("PX")) {
+                                        Long expiryTime = Long.parseLong(command.get(5));
+                                        expiry.put(key, expiryTime);
+                                    }
+                                }
+
                                 out.write("+OK\r\n".getBytes());
                             } else {
                                 out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
@@ -83,10 +93,16 @@ public class Main {
                         case "GET":
                             if(command.size() > 1){
                                 String key = command.get(1);
-                                if(map.containsKey(key)) {
-                                    String value = map.get(key);
-                                    String resppnse = "$" + value.length() + "\r\n" + value + "\r\n";
-                                    out.write(resppnse.getBytes());
+                                if(store.containsKey(key)) {
+                                    if(expiry.get(key) == null || expiry.get(key) >= System.currentTimeMillis()) {
+                                        String value = store.get(key);
+                                        String response = "$" + value.length() + "\r\n" + value + "\r\n";
+                                        out.write(response.getBytes());
+                                    } else {
+                                        store.remove(key);
+                                        expiry.remove(key);
+                                        out.write("$-1\\r\\n".getBytes());
+                                    }
                                 }
                                 else out.write("$-1\\r\\n".getBytes());
                             } else {
