@@ -102,10 +102,10 @@ public class Main {
                                     } else {
                                         store.remove(key);
                                         expiry.remove(key);
-                                        out.write("$-1\\r\\n".getBytes());
+                                        out.write("$-1\r\n".getBytes());
                                     }
                                 }
-                                else out.write("$-1\\r\\n".getBytes());
+                                else out.write("$-1\r\n".getBytes());
                             } else {
                                 out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
                             }
