@@ -78,9 +78,9 @@ public class Main {
                                 store.put(key, value);
 
                                 if(command.size() > 3) {
-                                    String expiryType = command.get(4);
+                                    String expiryType = command.get(3);
                                     if(expiryType.equalsIgnoreCase("PX")) {
-                                        Long expiryTime = Long.parseLong(command.get(5));
+                                        Long expiryTime = Long.parseLong(command.get(4));
                                         expiry.put(key, expiryTime);
                                         System.out.println("Expiry set for key: " + key + " is: " + expiryTime);
                                     }
