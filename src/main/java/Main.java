@@ -35,51 +35,69 @@ public class Main {
     }
 
     private static void handleClient(Socket clientSocket) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        OutputStream out = clientSocket.getOutputStream();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+             OutputStream out = clientSocket.getOutputStream()) {
 
-        String line;
-        while ((line = in.readLine()) != null) {
-            if (line.startsWith("*")) {
-                int arrayLength = Integer.parseInt(line.substring(1));
-                List<String> command = new ArrayList<>();
-
-                for (int i = 0; i < arrayLength; i++) {
-                    String newLine = in.readLine();
-                    if (newLine != null && newLine.startsWith("$")) {
-                        int commandLength = Integer.parseInt(newLine.substring(1));
-                        if (commandLength >= 0) {
-                            String element = in.readLine();
-                            if (element != null) command.add(element);
-                        }
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    List<String> command = parseRespArray(line, in);
+                    if (!command.isEmpty()) {
+                        processCommand(command, out);
+                        out.flush();
                     }
                 }
+            }
+        } catch (IOException e) {
+            System.err.println("Error handling client: " + e.getMessage());
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                System.err.println("Error closing client socket: " + e.getMessage());
+            }
+        }
+    }
 
-                if (!command.isEmpty()) {
-                    String commandName = command.get(0).toUpperCase();
+    private static List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
+        int arrayLength = Integer.parseInt(arrayLine.substring(1));
+        List<String> command = new ArrayList<>();
 
-                    switch (commandName) {
-                        case "PING":
-                            out.write("+PONG\r\n".getBytes());
-                            break;
-                        case "ECHO":
-                            handleEcho(command, out);
-                            break;
-                        case "SET":
-                            handleSet(command, out);
-                            break;
-                        case "GET":
-                            handleGet(command, out);
-                            break;
-                        default:
-                            out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
-                            break;
+        for (int i = 0; i < arrayLength; i++) {
+            String lengthLine = in.readLine();
+            if (lengthLine != null && lengthLine.startsWith("$")) {
+                int commandLength = Integer.parseInt(lengthLine.substring(1));
+                if (commandLength >= 0) {
+                    String element = in.readLine();
+                    if (element != null) {
+                        command.add(element);
                     }
-                    out.flush();
                 }
             }
         }
-        out.flush();
+        return command;
+    }
+
+    private static void processCommand(List<String> command, OutputStream out) throws IOException {
+        String commandName = command.get(0).toUpperCase();
+
+        switch (commandName) {
+            case "PING":
+                out.write("+PONG\r\n".getBytes());
+                break;
+            case "ECHO":
+                handleEcho(command, out);
+                break;
+            case "SET":
+                handleSet(command, out);
+                break;
+            case "GET":
+                handleGet(command, out);
+                break;
+            default:
+                out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
+                break;
+        }
     }
 
     public static void handleEcho(List<String> command, OutputStream out) throws IOException {
@@ -96,39 +114,52 @@ public class Main {
         if (command.size() >= 3) {
             String key = command.get(1);
             String value = command.get(2);
-            store.put(key, value);
 
-            if (command.size() > 3) {
-                String expiryType = command.get(3);
-                if (expiryType.equalsIgnoreCase("PX")) {
-                    Long expiryTime = System.currentTimeMillis() + Long.parseLong(command.get(4));
-                    expiry.put(key, expiryTime);
-                    System.out.println("Expiry set for key: " + key + " is: " + expiryTime);
-                }
+            if (command.size() >= 5 && "PX".equalsIgnoreCase(command.get(3))) {
+                long expiryMs = Long.parseLong(command.get(4));
+                long expiryTime = System.currentTimeMillis() + expiryMs;
+                store.put(key, value);
+                expiry.put(key, expiryTime);
+            } else {
+                store.put(key, value);
+                expiry.remove(key); // Remove any existing expiry
             }
-            out.write("+OK\r\n".getBytes());
         } else {
             out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
+            return;
         }
+        out.write("+OK\r\n".getBytes());
     }
 
     public static void handleGet(List<String> command, OutputStream out) throws IOException {
         if (command.size() > 1) {
             String key = command.get(1);
-            if (store.containsKey(key)) {
-                System.out.println("Current time: " + System.currentTimeMillis());
-                if (expiry.get(key) == null || expiry.get(key) >= System.currentTimeMillis()) {
-                    String value = store.get(key);
-                    String response = "$" + value.length() + "\r\n" + value + "\r\n";
-                    out.write(response.getBytes());
-                } else {
-                    store.remove(key);
-                    expiry.remove(key);
-                    out.write("$-1\r\n".getBytes());
-                }
-            } else out.write("$-1\r\n".getBytes());
+
+            if (isExpired(key)) {
+                cleanupExpiredKey(key);
+                out.write("$-1\r\n".getBytes());
+                return;
+            }
+
+            String value = store.get(key);
+            if (value != null) {
+                String response = "$" + value.length() + "\r\n" + value + "\r\n";
+                out.write(response.getBytes());
+            } else {
+                out.write("$-1\r\n".getBytes());
+            }
         } else {
             out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
         }
+    }
+
+    private static boolean isExpired(String key) {
+        Long expiryTime = expiry.get(key);
+        return expiryTime != null && System.currentTimeMillis() > expiryTime;
+    }
+
+    private static void cleanupExpiredKey(String key) {
+        store.remove(key);
+        expiry.remove(key);
     }
 }
