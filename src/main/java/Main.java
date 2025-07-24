@@ -75,7 +75,7 @@ public class Main {
                                 String key = command.get(1);
                                 String value = command.get(2);
                                 map.put(key, value);
-                                out.write("+OK\\r\\n".getBytes());
+                                out.write("+OK\r\n".getBytes());
                             } else {
                                 out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
                             }
