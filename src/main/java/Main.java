@@ -16,7 +16,7 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                try{
+                try {
                     Socket clientSocket = serverSocket.accept();
                     new Thread(() -> {
                         try {
@@ -39,23 +39,23 @@ public class Main {
         OutputStream out = clientSocket.getOutputStream();
 
         String line;
-        while((line = in.readLine()) != null){
-            if(line.startsWith("*")) {
+        while ((line = in.readLine()) != null) {
+            if (line.startsWith("*")) {
                 int arrayLength = Integer.parseInt(line.substring(1));
                 List<String> command = new ArrayList<>();
 
-                for(int i = 0; i < arrayLength; i++) {
+                for (int i = 0; i < arrayLength; i++) {
                     String newLine = in.readLine();
-                    if(newLine != null && newLine.startsWith("$")){
+                    if (newLine != null && newLine.startsWith("$")) {
                         int commandLength = Integer.parseInt(newLine.substring(1));
-                        if(commandLength >= 0){
+                        if (commandLength >= 0) {
                             String element = in.readLine();
-                            if(element != null) command.add(element);
+                            if (element != null) command.add(element);
                         }
                     }
                 }
 
-                if(!command.isEmpty()){
+                if (!command.isEmpty()) {
                     String commandName = command.get(0).toUpperCase();
 
                     switch (commandName) {
@@ -63,52 +63,13 @@ public class Main {
                             out.write("+PONG\r\n".getBytes());
                             break;
                         case "ECHO":
-                            if(command.size() > 1) {
-                                String arg = command.get(1);
-                                String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
-                                out.write(response.getBytes());
-                            } else {
-                                out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
-                            }
+                            handleEcho(command, out);
                             break;
                         case "SET":
-                            if(command.size() >= 3){
-                                String key = command.get(1);
-                                String value = command.get(2);
-                                store.put(key, value);
-
-                                if(command.size() > 3) {
-                                    String expiryType = command.get(3);
-                                    if(expiryType.equalsIgnoreCase("PX")) {
-                                        Long expiryTime = System.currentTimeMillis() + Long.parseLong(command.get(4));
-                                        expiry.put(key, expiryTime);
-                                        System.out.println("Expiry set for key: " + key + " is: " + expiryTime);
-                                    }
-                                }
-                                out.write("+OK\r\n".getBytes());
-                            } else {
-                                out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
-                            }
+                            handleSet(command, out);
                             break;
                         case "GET":
-                            if(command.size() > 1){
-                                String key = command.get(1);
-                                if(store.containsKey(key)) {
-                                    System.out.println("Current time: " + System.currentTimeMillis());
-                                    if(expiry.get(key) == null || expiry.get(key) >= System.currentTimeMillis()) {
-                                        String value = store.get(key);
-                                        String response = "$" + value.length() + "\r\n" + value + "\r\n";
-                                        out.write(response.getBytes());
-                                    } else {
-                                        store.remove(key);
-                                        expiry.remove(key);
-                                        out.write("$-1\r\n".getBytes());
-                                    }
-                                }
-                                else out.write("$-1\r\n".getBytes());
-                            } else {
-                                out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
-                            }
+                            handleGet(command, out);
                             break;
                         default:
                             out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
@@ -119,5 +80,55 @@ public class Main {
             }
         }
         out.flush();
+    }
+
+    public static void handleEcho(List<String> command, OutputStream out) throws IOException {
+        if (command.size() > 1) {
+            String arg = command.get(1);
+            String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
+            out.write(response.getBytes());
+        } else {
+            out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+        }
+    }
+
+    public static void handleSet(List<String> command, OutputStream out) throws IOException {
+        if (command.size() >= 3) {
+            String key = command.get(1);
+            String value = command.get(2);
+            store.put(key, value);
+
+            if (command.size() > 3) {
+                String expiryType = command.get(3);
+                if (expiryType.equalsIgnoreCase("PX")) {
+                    Long expiryTime = System.currentTimeMillis() + Long.parseLong(command.get(4));
+                    expiry.put(key, expiryTime);
+                    System.out.println("Expiry set for key: " + key + " is: " + expiryTime);
+                }
+            }
+            out.write("+OK\r\n".getBytes());
+        } else {
+            out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
+        }
+    }
+
+    public static void handleGet(List<String> command, OutputStream out) throws IOException {
+        if (command.size() > 1) {
+            String key = command.get(1);
+            if (store.containsKey(key)) {
+                System.out.println("Current time: " + System.currentTimeMillis());
+                if (expiry.get(key) == null || expiry.get(key) >= System.currentTimeMillis()) {
+                    String value = store.get(key);
+                    String response = "$" + value.length() + "\r\n" + value + "\r\n";
+                    out.write(response.getBytes());
+                } else {
+                    store.remove(key);
+                    expiry.remove(key);
+                    out.write("$-1\r\n".getBytes());
+                }
+            } else out.write("$-1\r\n".getBytes());
+        } else {
+            out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
+        }
     }
 }
