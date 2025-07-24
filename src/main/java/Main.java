@@ -2,9 +2,13 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
+    private static Map<String, String> map = new HashMap<>();
+
     public static void main(String[] args) {
         int port = 6379;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -63,7 +67,30 @@ public class Main {
                                 String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
                                 out.write(response.getBytes());
                             } else {
-                                out.write("-ERR wrong number of arguments for 'echo' command\r\n".getBytes());
+                                out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+                            }
+                            break;
+                        case "SET":
+                            if(command.size() > 1){
+                                String key = command.get(1);
+                                String value = command.get(2);
+                                map.put(key, value);
+                                out.write("+OK\\r\\n".getBytes());
+                            } else {
+                                out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
+                            }
+                            break;
+                        case "GET":
+                            if(command.size() > 1){
+                                String key = command.get(1);
+                                if(map.containsKey(key)) {
+                                    String value = map.get(key);
+                                    String resppnse = "$" + value.length() + "\r\n" + value + "\r\n";
+                                    out.write(resppnse.getBytes());
+                                }
+                                else out.write("$-1\\r\\n".getBytes());
+                            } else {
+                                out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
                             }
                             break;
                         default:
