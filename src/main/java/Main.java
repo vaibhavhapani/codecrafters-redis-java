@@ -105,6 +105,9 @@ public class Main {
             case "LRANGE":
                 handleLRange(command, out);
                 break;
+            case "LLEN":
+                handleLLen(command, out);
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -212,8 +215,7 @@ public class Main {
             lists.put(key, list);
         }
 
-        String response = ":" + list.size() + "\r\n";
-        out.write(response.getBytes());
+        writeSimpleString(":", String.valueOf(list.size()), out);
     }
 
     public static void handleLRange(List<String> command, OutputStream out) throws IOException {
@@ -250,6 +252,23 @@ public class Main {
             String element = list.get(i);
             writeBulkString("$", element, out);
         }
+    }
+
+    public static void handleLLen(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+        List<String> list = lists.get(key);
+
+        if(list == null || list.isEmpty()) {
+            writeSimpleString(":", "0", out);
+            return;
+        }
+
+        writeSimpleString(":", String.valueOf(list.size()), out);
     }
 
     private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
