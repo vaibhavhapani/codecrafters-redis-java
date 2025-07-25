@@ -354,35 +354,26 @@ public class Main {
     }
 
     private static void notifyBlockedClients(String key) throws IOException {
-        List<BlockedClient> clientsToNotify = new ArrayList<>();
-
         synchronized (blockedClients) {
-            List<BlockedClient> toRemove = new ArrayList<>();
+            Iterator<BlockedClient> it = blockedClients.iterator();
 
-            for (BlockedClient client : blockedClients) {
-                if (client.isTimedOut()) {
-                    toRemove.add(client);
-                    writeNullBulkString(client.out);
-                } else if (client.key.equals(key)) {
-                    clientsToNotify.add(client);
+            while (it.hasNext()){
+                BlockedClient client = it.next();
+
+                if(client.key.equals(key)) {
+                    List<String> list = lists.get(key);
+
+                    if (list != null && !list.isEmpty()) {
+                        String poppedElement = list.remove(0);
+
+                        writeSimpleString("*", "2", client.out);
+                        writeBulkString(key, client.out);
+                        writeBulkString(poppedElement, client.out);
+
+                        it.remove();
+                        return;
+                    }
                 }
-            }
-
-            blockedClients.removeAll(toRemove);
-
-            clientsToNotify.sort((a, b) -> Long.compare(a.blockTime, b.blockTime));
-            List<String> list = lists.get(key);
-
-            for(BlockedClient client: clientsToNotify){
-                if(list != null && !list.isEmpty()) {
-                    String poppedElement = list.remove(0);
-
-                    writeSimpleString("*", "2", client.out);
-                    writeBulkString(key, client.out);
-                    writeBulkString(poppedElement, client.out);
-
-                    blockedClients.remove(client);
-                } else break;
             }
         }
     }
