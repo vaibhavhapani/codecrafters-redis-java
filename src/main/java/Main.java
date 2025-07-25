@@ -1,16 +1,34 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Main {
     private static final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
+
+    private static final Queue<BlockedClient> blockedClients = new ConcurrentLinkedQueue<>();
+
+    private static class BlockedClient {
+        final String key;
+        final OutputStream out;
+        final long blockTime;
+        final long timeoutTime;
+
+        BlockedClient(String key, int timeoutSeconds, OutputStream out) {
+            this.key = key;
+            this.out = out;
+            this.blockTime = System.currentTimeMillis();
+            this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (timeoutSeconds * 1000L);
+        }
+
+        boolean isTimedOut() {
+            return timeoutTime > 0 && System.currentTimeMillis() > timeoutTime;
+        }
+    }
 
     public static void main(String[] args) {
         int port = 6379;
@@ -111,6 +129,8 @@ public class Main {
             case "LPOP":
                 handleLPop(command, out);
                 break;
+            case "BLPOP":
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -197,8 +217,8 @@ public class Main {
             lists.put(key, list);
         }
 
-        String response = ":" + list.size() + "\r\n";
-        out.write(response.getBytes());
+        writeSimpleString(":", String.valueOf(list.size()), out);
+        notifyBlockedClients(key);
     }
 
     public static void handleRPush(List<String> command, OutputStream out) throws IOException {
@@ -219,6 +239,7 @@ public class Main {
         }
 
         writeSimpleString(":", String.valueOf(list.size()), out);
+        notifyBlockedClients(key);
     }
 
     public static void handleLRange(List<String> command, OutputStream out) throws IOException {
@@ -238,12 +259,12 @@ public class Main {
             return;
         }
 
-        if(start_index < 0) start_index = Math.max(list.size() + start_index, 0);
+        if (start_index < 0) start_index = Math.max(list.size() + start_index, 0);
 
         if (end_index >= list.size()) end_index = list.size() - 1;
-        else if(end_index < 0) end_index = Math.max(list.size() + end_index, 0);
+        else if (end_index < 0) end_index = Math.max(list.size() + end_index, 0);
 
-        if(start_index >= list.size() || start_index > end_index) {
+        if (start_index >= list.size() || start_index > end_index) {
             writeSimpleString("*", "0", out);
             return;
         }
@@ -266,7 +287,7 @@ public class Main {
         String key = command.get(1);
         List<String> list = lists.get(key);
 
-        if(list == null || list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             writeSimpleString(":", "0", out);
             return;
         }
@@ -283,7 +304,7 @@ public class Main {
         String key = command.get(1);
         List<String> list = lists.get(key);
 
-        if(list == null || list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             if (command.size() == 2) {
                 writeNullBulkString(out);
             } else {
@@ -293,16 +314,75 @@ public class Main {
         }
 
         int limit = 1;
-        if(command.size() > 2) limit = Integer.parseInt(command.get(2));
-        if(limit > list.size()) limit = list.size();
+        if (command.size() > 2) limit = Integer.parseInt(command.get(2));
+        if (limit > list.size()) limit = list.size();
 
-        if(limit > 1){
+        if (limit > 1) {
             writeSimpleString("*", String.valueOf(limit), out);
         }
 
-        for(int i = 0; i < limit; i++) {
-            String popped_string = list.remove(0);
-            writeBulkString(popped_string, out);
+        for (int i = 0; i < limit; i++) {
+            String poppedString = list.remove(0);
+            writeBulkString(poppedString, out);
+        }
+    }
+
+    public static void handleBLPop(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            out.write("-ERR wrong number of arguments for 'BLPOP' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+        int timeOut = Integer.parseInt(command.get(2));
+
+        List<String> list = lists.get(key);
+
+        if (list != null && !list.isEmpty()) {
+            String poppedElement = list.remove(0);
+
+            // return array - [key, value]
+            writeSimpleString("*", "2", out);
+            writeBulkString(key, out);
+            writeBulkString(poppedElement, out);
+
+            return;
+        }
+
+        blockedClients.offer(new BlockedClient(key, timeOut, out));
+    }
+
+    private static void notifyBlockedClients(String key) throws IOException {
+        List<BlockedClient> clientsToNotify = new ArrayList<>();
+
+        synchronized (blockedClients) {
+            List<BlockedClient> toRemove = new ArrayList<>();
+
+            for (BlockedClient client : blockedClients) {
+                if (client.isTimedOut()) {
+                    toRemove.add(client);
+                    writeNullBulkString(client.out);
+                } else if (client.key.equals(key)) {
+                    clientsToNotify.add(client);
+                }
+            }
+
+            blockedClients.removeAll(toRemove);
+
+            clientsToNotify.sort((a, b) -> Long.compare(a.blockTime, b.blockTime));
+            List<String> list = lists.get(key);
+
+            for(BlockedClient client: clientsToNotify){
+                if(list != null && !list.isEmpty()) {
+                    String poppedElement = list.remove(0);
+
+                    writeSimpleString("*", "2", client.out);
+                    writeBulkString(key, client.out);
+                    writeBulkString(poppedElement, client.out);
+
+                    blockedClients.remove(client);
+                } else break;
+            }
         }
     }
 
