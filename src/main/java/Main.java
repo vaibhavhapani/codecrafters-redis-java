@@ -85,7 +85,7 @@ public class Main {
 
         switch (commandName) {
             case "PING":
-                out.write("+PONG\r\n".getBytes());
+                writeSimpleString("+", "PONG", out);
                 break;
             case "ECHO":
                 handleEcho(command, out);
@@ -114,8 +114,7 @@ public class Main {
             return;
         }
         String arg = command.get(1);
-        String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
-        out.write(response.getBytes());
+        writeBulkString("$", arg, out);
     }
 
     public static void handleSet(List<String> command, OutputStream out) throws IOException {
@@ -137,7 +136,7 @@ public class Main {
             expiry.remove(key); // Remove any existing expiry
         }
 
-        out.write("+OK\r\n".getBytes());
+        writeSimpleString("+", "OK", out);
     }
 
     public static void handleGet(List<String> command, OutputStream out) throws IOException {
@@ -150,16 +149,15 @@ public class Main {
 
         if (isExpired(key)) {
             cleanupExpiredKey(key);
-            out.write("$-1\r\n".getBytes());
+            writeSimpleString("$", "-1", out);
             return;
         }
 
         String value = store.get(key);
         if (value != null) {
-            String response = "$" + value.length() + "\r\n" + value + "\r\n";
-            out.write(response.getBytes());
+            writeBulkString("$", value, out);
         } else {
-            out.write("$-1\r\n".getBytes());
+            writeSimpleString("$", "-1", out);
         }
     }
 
@@ -208,12 +206,16 @@ public class Main {
                 lists.get(key).isEmpty() ||
                 start_index > end_index ||
                 start_index >= lists.get(key).size()) {
-            out.write("*0\r\n".getBytes());
+            writeSimpleString("*", "0", out);
             return;
         }
 
         List<String> list = lists.get(key);
+
+        if(start_index < 0) start_index = Math.max(list.size() + start_index, 0);
+
         if (end_index >= list.size()) end_index = list.size() - 1;
+        else if(end_index < 0) end_index = Math.max(list.size() + end_index, 0);
 
         StringBuilder response = new StringBuilder("*" + (end_index - start_index + 1) + "\r\n");
         for (int i = start_index; i <= end_index; i++) {
@@ -226,4 +228,13 @@ public class Main {
         }
         out.write(response.toString().getBytes());
     }
+
+    private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
+        out.write((firstByte + message + "\r\n").getBytes());
+    }
+
+    private static void writeBulkString(String firstByte, String value, OutputStream out) throws IOException {
+        out.write((firstByte + value.length() + "\r\n" + value + "\r\n").getBytes());
+    }
+
 }
