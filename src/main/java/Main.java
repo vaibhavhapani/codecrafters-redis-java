@@ -204,7 +204,6 @@ public class Main {
 
         if (!lists.containsKey(key) ||
                 lists.get(key).isEmpty() ||
-                start_index > end_index ||
                 start_index >= lists.get(key).size()) {
             writeSimpleString("*", "0", out);
             return;
