@@ -284,7 +284,11 @@ public class Main {
         List<String> list = lists.get(key);
 
         if(list == null || list.isEmpty()) {
-            writeNullBulkString(out);
+            if (command.size() == 2) {
+                writeNullBulkString(out);
+            } else {
+                writeSimpleString("*", "0", out);
+            }
             return;
         }
 
@@ -292,12 +296,15 @@ public class Main {
         if(command.size() > 2) limit = Integer.parseInt(command.get(2));
         if(limit > list.size()) limit = list.size();
 
+        System.out.println("____________________" + key + " " + list.size() + "------" + limit);
+
         if(limit > 0){
             writeSimpleString("*", String.valueOf(list), out);
         }
 
         for(int i = 0; i < limit; i++) {
             String popped_string = list.remove(0);
+            System.out.print("++++++++++" + popped_string);
             writeBulkString(popped_string, out);
         }
     }
