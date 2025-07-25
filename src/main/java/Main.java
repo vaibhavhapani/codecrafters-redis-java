@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
-    private static final Map<String, String> store = new HashMap<>();
-    private static final Map<String, Long> expiry = new HashMap<>();
+    private static final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
         int port = 6379;
@@ -94,6 +96,8 @@ public class Main {
             case "GET":
                 handleGet(command, out);
                 break;
+            case "RPUSH":
+                handleRPush(command, out);
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -101,55 +105,57 @@ public class Main {
     }
 
     public static void handleEcho(List<String> command, OutputStream out) throws IOException {
-        if (command.size() > 1) {
-            String arg = command.get(1);
-            String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
-            out.write(response.getBytes());
-        } else {
+        if (command.size() < 2) {
             out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+            return;
         }
+        String arg = command.get(1);
+        String response = "$" + arg.length() + "\r\n" + arg + "\r\n";
+        out.write(response.getBytes());
     }
 
     public static void handleSet(List<String> command, OutputStream out) throws IOException {
-        if (command.size() >= 3) {
-            String key = command.get(1);
-            String value = command.get(2);
-
-            if (command.size() >= 5 && "PX".equalsIgnoreCase(command.get(3))) {
-                long expiryMs = Long.parseLong(command.get(4));
-                long expiryTime = System.currentTimeMillis() + expiryMs;
-                store.put(key, value);
-                expiry.put(key, expiryTime);
-            } else {
-                store.put(key, value);
-                expiry.remove(key); // Remove any existing expiry
-            }
-        } else {
+        if (command.size() < 3) {
             out.write("-ERR wrong number of arguments for 'SET' command\r\n".getBytes());
             return;
         }
+
+        String key = command.get(1);
+        String value = command.get(2);
+
+        if (command.size() >= 5 && "PX".equalsIgnoreCase(command.get(3))) {
+            long expiryMs = Long.parseLong(command.get(4));
+            long expiryTime = System.currentTimeMillis() + expiryMs;
+            store.put(key, value);
+            expiry.put(key, expiryTime);
+        } else {
+            store.put(key, value);
+            expiry.remove(key); // Remove any existing expiry
+        }
+
         out.write("+OK\r\n".getBytes());
     }
 
     public static void handleGet(List<String> command, OutputStream out) throws IOException {
-        if (command.size() > 1) {
-            String key = command.get(1);
-
-            if (isExpired(key)) {
-                cleanupExpiredKey(key);
-                out.write("$-1\r\n".getBytes());
-                return;
-            }
-
-            String value = store.get(key);
-            if (value != null) {
-                String response = "$" + value.length() + "\r\n" + value + "\r\n";
-                out.write(response.getBytes());
-            } else {
-                out.write("$-1\r\n".getBytes());
-            }
-        } else {
+        if (command.size() < 2) {
             out.write("-ERR wrong number of arguments for 'GET' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+
+        if (isExpired(key)) {
+            cleanupExpiredKey(key);
+            out.write("$-1\r\n".getBytes());
+            return;
+        }
+
+        String value = store.get(key);
+        if (value != null) {
+            String response = "$" + value.length() + "\r\n" + value + "\r\n";
+            out.write(response.getBytes());
+        } else {
+            out.write("$-1\r\n".getBytes());
         }
     }
 
@@ -161,5 +167,22 @@ public class Main {
     private static void cleanupExpiredKey(String key) {
         store.remove(key);
         expiry.remove(key);
+    }
+
+    public static void handleRPush(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            out.write("-ERR wrong number of arguments for 'RPUSH' command\r\n".getBytes());
+        }
+
+        String key = command.get(1);
+        String element = command.get(2);
+
+        if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
+        List<String> list = lists.get(key);
+        list.add(element);
+        lists.put(key, list);
+
+        String response = ":" + list.size() + "\r\n";
+        out.write(response.getBytes());
     }
 }
