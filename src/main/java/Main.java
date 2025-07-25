@@ -99,6 +99,9 @@ public class Main {
             case "RPUSH":
                 handleRPush(command, out);
                 break;
+            case "LPUSH":
+                handleLPush(command, out);
+                break;
             case "LRANGE":
                 handleLRange(command, out);
                 break;
@@ -169,6 +172,27 @@ public class Main {
     private static void cleanupExpiredKey(String key) {
         store.remove(key);
         expiry.remove(key);
+    }
+
+    public static void handleLPush(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            out.write("-ERR wrong number of arguments for 'LPUSH' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+        if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
+        List<String> list = lists.get(key);
+
+        int elements = command.size();
+        for (int i = 2; i < elements; i++) {
+            String element = command.get(i);
+            list.add(0, element);
+            lists.put(key, list);
+        }
+
+        String response = ":" + list.size() + "\r\n";
+        out.write(response.getBytes());
     }
 
     public static void handleRPush(List<String> command, OutputStream out) throws IOException {
