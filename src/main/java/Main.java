@@ -292,8 +292,9 @@ public class Main {
         if(command.size() > 2) limit = Integer.parseInt(command.get(2));
         if(limit > list.size()) limit = list.size();
 
-        String response = "*" + limit + "\r\n";
-        out.write(response.getBytes());
+        if(limit > 0){
+            writeSimpleString("*", String.valueOf(list), out);
+        }
 
         for(int i = 0; i < limit; i++) {
             String popped_string = list.remove(0);
