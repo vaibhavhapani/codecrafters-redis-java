@@ -176,12 +176,15 @@ public class Main {
         }
 
         String key = command.get(1);
-        String element = command.get(2);
-
         if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
         List<String> list = lists.get(key);
-        list.add(element);
-        lists.put(key, list);
+
+        int elements = command.size();
+        for(int i = 2; i < elements; i++) {
+            String element = command.get(i);
+            list.add(element);
+            lists.put(key, list);
+        }
 
         String response = ":" + list.size() + "\r\n";
         out.write(response.getBytes());
