@@ -108,6 +108,9 @@ public class Main {
             case "LLEN":
                 handleLLen(command, out);
                 break;
+            case "LPOP":
+                handleLPop(command, out);
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -120,7 +123,7 @@ public class Main {
             return;
         }
         String arg = command.get(1);
-        writeBulkString("$", arg, out);
+        writeBulkString(arg, out);
     }
 
     public static void handleSet(List<String> command, OutputStream out) throws IOException {
@@ -161,7 +164,7 @@ public class Main {
 
         String value = store.get(key);
         if (value != null) {
-            writeBulkString("$", value, out);
+            writeBulkString(value, out);
         } else {
             writeSimpleString("$", "-1", out);
         }
@@ -250,7 +253,7 @@ public class Main {
 
         for (int i = start_index; i <= end_index; i++) {
             String element = list.get(i);
-            writeBulkString("$", element, out);
+            writeBulkString(element, out);
         }
     }
 
@@ -271,12 +274,30 @@ public class Main {
         writeSimpleString(":", String.valueOf(list.size()), out);
     }
 
+    public static void handleLPop(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+        List<String> list = lists.get(key);
+
+        if(list == null || list.isEmpty()) {
+            writeSimpleString(":", "0", out);
+            return;
+        }
+
+        String popped_string = list.remove(0);
+        writeBulkString(popped_string, out);
+    }
+
     private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
         out.write((firstByte + message + "\r\n").getBytes());
     }
 
-    private static void writeBulkString(String firstByte, String value, OutputStream out) throws IOException {
-        out.write((firstByte + value.length() + "\r\n" + value + "\r\n").getBytes());
+    private static void writeBulkString(String value, OutputStream out) throws IOException {
+        out.write(("$" + value.length() + "\r\n" + value + "\r\n").getBytes());
     }
 
 }
