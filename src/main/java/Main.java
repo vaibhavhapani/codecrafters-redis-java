@@ -202,30 +202,30 @@ public class Main {
         int start_index = Integer.parseInt(command.get(2));
         int end_index = Integer.parseInt(command.get(3));
 
-        if (!lists.containsKey(key) ||
-                lists.get(key).isEmpty() ||
-                start_index >= lists.get(key).size()) {
+        List<String> list = lists.get(key);
+
+        if (list == null || list.isEmpty()) {
             writeSimpleString("*", "0", out);
             return;
         }
-
-        List<String> list = lists.get(key);
 
         if(start_index < 0) start_index = Math.max(list.size() + start_index, 0);
 
         if (end_index >= list.size()) end_index = list.size() - 1;
         else if(end_index < 0) end_index = Math.max(list.size() + end_index, 0);
 
-        StringBuilder response = new StringBuilder("*" + (end_index - start_index + 1) + "\r\n");
+        if(start_index >= list.size() || start_index > end_index) {
+            writeSimpleString("*", "0", out);
+            return;
+        }
+
+        String response = "*" + (end_index - start_index + 1) + "\r\n";
+        out.write(response.getBytes());
+
         for (int i = start_index; i <= end_index; i++) {
             String element = list.get(i);
-            response.append("$").
-                    append(element.length()).
-                    append("\r\n").
-                    append(element).
-                    append("\r\n");
+            writeBulkString("$", element, out);
         }
-        out.write(response.toString().getBytes());
     }
 
     private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
