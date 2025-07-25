@@ -98,6 +98,7 @@ public class Main {
                 break;
             case "RPUSH":
                 handleRPush(command, out);
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
