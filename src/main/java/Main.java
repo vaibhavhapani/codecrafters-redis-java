@@ -130,6 +130,7 @@ public class Main {
                 handleLPop(command, out);
                 break;
             case "BLPOP":
+                handleBLPop(command, out);
                 break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
