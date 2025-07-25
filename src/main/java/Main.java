@@ -292,11 +292,11 @@ public class Main {
             return;
         }
 
-        int limit = 0;
+        int limit = 1;
         if(command.size() > 2) limit = Integer.parseInt(command.get(2));
         if(limit > list.size()) limit = list.size();
 
-        if(limit > 0){
+        if(limit > 1){
             writeSimpleString("*", String.valueOf(limit), out);
         }
 
