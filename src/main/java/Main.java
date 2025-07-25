@@ -288,8 +288,17 @@ public class Main {
             return;
         }
 
-        String popped_string = list.remove(0);
-        writeBulkString(popped_string, out);
+        int limit = 0;
+        if(command.size() > 2) limit = Integer.parseInt(command.get(2));
+        if(limit > list.size()) limit = list.size();
+
+        String response = "*" + limit + "\r\n";
+        out.write(response.getBytes());
+
+        for(int i = 0; i < limit; i++) {
+            String popped_string = list.remove(0);
+            writeBulkString(popped_string, out);
+        }
     }
 
     private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
