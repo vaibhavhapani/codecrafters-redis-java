@@ -158,7 +158,7 @@ public class Main {
 
         if (isExpired(key)) {
             cleanupExpiredKey(key);
-            writeSimpleString("$", "-1", out);
+            writeNullBulkString(out);
             return;
         }
 
@@ -166,7 +166,7 @@ public class Main {
         if (value != null) {
             writeBulkString(value, out);
         } else {
-            writeSimpleString("$", "-1", out);
+            writeNullBulkString(out);
         }
     }
 
@@ -276,7 +276,7 @@ public class Main {
 
     public static void handleLPop(List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
-            out.write("-ERR wrong number of arguments for 'ECHO' command\r\n".getBytes());
+            out.write("-ERR wrong number of arguments for 'LPOP' command\r\n".getBytes());
             return;
         }
 
@@ -284,7 +284,7 @@ public class Main {
         List<String> list = lists.get(key);
 
         if(list == null || list.isEmpty()) {
-            writeSimpleString(":", "0", out);
+            writeNullBulkString(out);
             return;
         }
 
@@ -309,4 +309,7 @@ public class Main {
         out.write(("$" + value.length() + "\r\n" + value + "\r\n").getBytes());
     }
 
+    private static void writeNullBulkString(OutputStream out) throws IOException {
+        out.write("$-1\r\n".getBytes());
+    }
 }
