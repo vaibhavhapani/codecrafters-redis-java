@@ -297,7 +297,7 @@ public class Main {
         if(limit > list.size()) limit = list.size();
 
         if(limit > 0){
-            writeSimpleString("*", String.valueOf(list.size()), out);
+            writeSimpleString("*", String.valueOf(limit), out);
         }
 
         for(int i = 0; i < limit; i++) {
