@@ -99,6 +99,9 @@ public class Main {
             case "RPUSH":
                 handleRPush(command, out);
                 break;
+            case "LRANGE":
+                handleLRange(command, out);
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -173,6 +176,7 @@ public class Main {
     public static void handleRPush(List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             out.write("-ERR wrong number of arguments for 'RPUSH' command\r\n".getBytes());
+            return;
         }
 
         String key = command.get(1);
@@ -180,7 +184,7 @@ public class Main {
         List<String> list = lists.get(key);
 
         int elements = command.size();
-        for(int i = 2; i < elements; i++) {
+        for (int i = 2; i < elements; i++) {
             String element = command.get(i);
             list.add(element);
             lists.put(key, list);
@@ -188,5 +192,38 @@ public class Main {
 
         String response = ":" + list.size() + "\r\n";
         out.write(response.getBytes());
+    }
+
+    public static void handleLRange(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 4) {
+            out.write("-ERR wrong number of arguments for 'LRANGE' command\r\n".getBytes());
+            return;
+        }
+
+        String key = command.get(1);
+        int start_index = Integer.parseInt(command.get(2));
+        int end_index = Integer.parseInt(command.get(3));
+
+        if (!lists.containsKey(key) ||
+                lists.get(key).isEmpty() ||
+                start_index > end_index ||
+                start_index >= lists.get(key).size()) {
+            out.write("*0\r\n".getBytes());
+            return;
+        }
+
+        List<String> list = lists.get(key);
+        if (end_index >= list.size()) end_index = list.size() - 1;
+
+        StringBuilder response = new StringBuilder("*" + (end_index - start_index + 1) + "\r\n");
+        for (int i = start_index; i <= end_index; i++) {
+            String element = list.get(i);
+            response.append("$").
+                    append(element.length()).
+                    append("\r\n").
+                    append(element).
+                    append("\r\n");
+        }
+        out.write(response.toString().getBytes());
     }
 }
