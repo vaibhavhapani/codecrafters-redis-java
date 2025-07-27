@@ -120,6 +120,9 @@ public class Main {
             case "ECHO":
                 handleEcho(command, out);
                 break;
+            case "TYPE":
+                handleType(command, out);
+                break;
             case "SET":
                 handleSet(command, out);
                 break;
@@ -157,6 +160,20 @@ public class Main {
         }
         String arg = command.get(1);
         writeBulkString(arg, out);
+    }
+
+    public static void handleType(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            out.write("-ERR wrong number of arguments for 'TYPE' command\r\n".getBytes());
+            return;
+        }
+        String key = command.get(1);
+
+        if (!store.containsKey(key)) {
+            writeSimpleString("+", "none", out);
+            return;
+        }
+        writeSimpleString("+", "string", out);
     }
 
     public static void handleSet(List<String> command, OutputStream out) throws IOException {
