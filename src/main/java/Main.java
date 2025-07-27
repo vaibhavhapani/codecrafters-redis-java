@@ -23,7 +23,7 @@ public class Main {
             this.key = key;
             this.out = out;
             this.blockTime = System.currentTimeMillis();
-            this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (long)(timeoutSeconds * 1000);
+            this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (long) (timeoutSeconds * 1000);
         }
 
         boolean isTimedOut() {
@@ -35,6 +35,17 @@ public class Main {
         int port = 6379;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
+
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(50); // check every 50ms
+                        checkTimedOutClients();
+                    } catch (Exception e) {
+                        System.err.println("Timeout checker error: " + e.getMessage());
+                    }
+                }
+            }).start();
 
             while (true) {
                 try {
@@ -361,10 +372,10 @@ public class Main {
         synchronized (blockedClients) {
             Iterator<BlockedClient> it = blockedClients.iterator();
 
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 BlockedClient client = it.next();
 
-                if(client.key.equals(key)) {
+                if (client.key.equals(key)) {
                     List<String> list = lists.get(key);
 
                     if (list != null && !list.isEmpty()) {
@@ -380,12 +391,14 @@ public class Main {
                 }
             }
         }
+    }
 
+    private static void checkTimedOutClients() throws IOException {
         synchronized (blockedClients) {
             Iterator<BlockedClient> it = blockedClients.iterator();
             while (it.hasNext()) {
                 BlockedClient client = it.next();
-                if(client.isTimedOut()) {
+                if (client.isTimedOut()) {
                     writeNullBulkString(client.out);
                     it.remove();
                 }
