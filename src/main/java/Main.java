@@ -10,6 +10,7 @@ public class Main {
     private static final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String[]> entries = new ConcurrentHashMap<>();
 
     private static final PriorityBlockingQueue<BlockedClient> blockedClients = new PriorityBlockingQueue<>(5, Comparator.comparingLong(c -> c.blockTime));
 
@@ -147,6 +148,9 @@ public class Main {
             case "BLPOP":
                 handleBLPop(command, out);
                 break;
+            case "XADD":
+                handleXAdd(command, out);
+                break;
             default:
                 out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
                 break;
@@ -169,11 +173,16 @@ public class Main {
         }
         String key = command.get(1);
 
-        if (!store.containsKey(key)) {
-            writeSimpleString("+", "none", out);
+        if(entries.containsKey(key)){
+            writeSimpleString("+", "stream", out);
             return;
         }
-        writeSimpleString("+", "string", out);
+
+        if (store.containsKey(key)) {
+            writeSimpleString("+", "string", out);
+            return;
+        }
+        writeSimpleString("+", "none", out);
     }
 
     public static void handleSet(List<String> command, OutputStream out) throws IOException {
@@ -421,6 +430,18 @@ public class Main {
                 }
             }
         }
+    }
+
+    public static void handleXAdd(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 5) {
+            out.write("-ERR wrong number of arguments for 'XADD' command\r\n".getBytes());
+            return;
+        }
+        String streamKey = command.get(1);
+        if(!entries.containsKey(streamKey)) entries.put(streamKey, new String[]{});
+
+        String keyId = command.get(2);
+        writeBulkString(keyId, out);
     }
 
     private static void writeSimpleString(String firstByte, String message, OutputStream out) throws IOException {
