@@ -99,6 +99,7 @@ public class Main {
 
         for (int i = 0; i < arrayLength; i++) {
             String lengthLine = in.readLine();
+
             if (lengthLine != null && lengthLine.startsWith("$")) {
                 int commandLength = Integer.parseInt(lengthLine.substring(1));
                 if (commandLength >= 0) {
