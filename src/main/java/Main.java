@@ -19,11 +19,11 @@ public class Main {
         final long blockTime;
         final long timeoutTime;
 
-        BlockedClient(String key, int timeoutSeconds, OutputStream out) {
+        BlockedClient(String key, double timeoutSeconds, OutputStream out) {
             this.key = key;
             this.out = out;
             this.blockTime = System.currentTimeMillis();
-            this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (timeoutSeconds * 1000L);
+            this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (long)(timeoutSeconds * 1000);
         }
 
         boolean isTimedOut() {
@@ -336,7 +336,7 @@ public class Main {
         }
 
         String key = command.get(1);
-        int timeOut = Integer.parseInt(command.get(2));
+        double timeOut = Double.parseDouble(command.get(2));
 
         List<String> list = lists.get(key);
 
