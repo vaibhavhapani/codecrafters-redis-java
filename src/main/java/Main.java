@@ -4,13 +4,14 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class Main {
     private static final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
 
-    private static final Queue<BlockedClient> blockedClients = new ConcurrentLinkedQueue<>();
+    private static final PriorityBlockingQueue<BlockedClient> blockedClients = new PriorityBlockingQueue<>(5, Comparator.comparingLong(c -> c.blockTime));
 
     private static class BlockedClient {
         final String key;
@@ -339,6 +340,7 @@ public class Main {
 
         List<String> list = lists.get(key);
 
+        // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
             String poppedElement = list.remove(0);
 
@@ -349,6 +351,8 @@ public class Main {
 
             return;
         }
+
+        // If the list is empty, the command blocks until timeout reached or an element is pushed
 
         blockedClients.offer(new BlockedClient(key, timeOut, out));
     }
@@ -373,6 +377,17 @@ public class Main {
                         it.remove();
                         return;
                     }
+                }
+            }
+        }
+
+        synchronized (blockedClients) {
+            Iterator<BlockedClient> it = blockedClients.iterator();
+            while (it.hasNext()) {
+                BlockedClient client = it.next();
+                if(client.isTimedOut()) {
+                    writeNullBulkString(client.out);
+                    it.remove();
                 }
             }
         }
