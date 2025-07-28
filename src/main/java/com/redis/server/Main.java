@@ -426,6 +426,8 @@ public class Main {
                         writeBulkString(key, client.out);
                         writeBulkString(poppedElement, client.out);
 
+                        client.out.flush();
+
                         System.out.print("=================== Notifier out ===============");
 
                         it.remove();
