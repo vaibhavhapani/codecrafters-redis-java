@@ -239,7 +239,7 @@ public class CommandHandlers {
             return;
         }
         String streamKey = command.get(1);
-        if (dataStore.hasEntryKey(streamKey)) dataStore.setEntry(streamKey, new HashMap<>());
+        if (!dataStore.hasEntryKey(streamKey)) dataStore.setEntry(streamKey, new HashMap<>());
 
         String keyId = command.get(2);
         writeBulkString(keyId, out);
