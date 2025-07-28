@@ -1,13 +1,14 @@
 package com.redis.server.storage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataStore {
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, List<String[]>> entries = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Map<String, String[]>> streams = new ConcurrentHashMap<>();
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -47,16 +48,16 @@ public class DataStore {
         return lists.containsKey(key);
     }
 
-    public List<String[]> getEntry(String key) {
-        return entries.get(key);
+    public Map<String, String[]> getEntry(String key) {
+        return streams.get(key);
     }
 
-//    public void setEntry(String key, List<String> list) {
-//        lists.put(key, list);
-//    }
+    public void setEntry(String key, Map<String, String[]> entries) {
+        streams.put(key, entries);
+    }
 
     public boolean hasEntryKey(String key) {
-        return entries.containsKey(key);
+        return streams.containsKey(key);
     }
 
     private boolean isExpired(String key) {

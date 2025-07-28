@@ -11,8 +11,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.redis.server.command.CommandProcessor.processCommand;
-
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final CommandProcessor commandProcessor;
@@ -32,7 +30,7 @@ public class ClientHandler implements Runnable {
                 if (line.startsWith(RedisConstants.ARRAY_PREFIX)) {
                     List<String> command = parseRespArray(line, in);
                     if (!command.isEmpty()) {
-                        processCommand(command, out);
+                        commandProcessor.processCommand(command, out);
                         out.flush();
                     }
                 }
