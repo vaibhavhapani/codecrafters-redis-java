@@ -393,6 +393,8 @@ public class Main {
             writeBulkString(key, out);
             writeBulkString(poppedElement, out);
 
+            out.flush();
+
             System.out.print("=================== out ===============");
 
             return;
@@ -420,6 +422,8 @@ public class Main {
                         writeSimpleString("*", "2", client.out);
                         writeBulkString(key, client.out);
                         writeBulkString(poppedElement, client.out);
+
+                        client.out.flush();
 
                         System.out.print("=================== Notifier out ===============");
 
