@@ -60,6 +60,10 @@ public class StreamEntry {
                                                      RedisStream stream)
             throws IllegalArgumentException {
 
+        if("*".equals(idTemplate)) {
+            return new StreamEntry(generateFullSequence(stream), fields);
+        }
+
         String[] parts = idTemplate.split("-");
         if (parts.length != 2 || !"*".equals(parts[1])) {
             throw new IllegalArgumentException("Invalid ID template for auto-sequence: " + idTemplate);
@@ -72,19 +76,39 @@ public class StreamEntry {
             throw new IllegalArgumentException("Invalid milliseconds time in ID template: " + idTemplate);
         }
 
-        long nextSequence;
-        if(stream == null || stream.isEmpty()) nextSequence = millisecondsTime == 0 ? 1 : 0;
-        else {
-            long maxSequence = -1;
-            for(StreamEntry entry: stream.getEntries()) {
-                if(entry.getMillisecondsTime() == millisecondsTime) maxSequence = Math.max(maxSequence, entry.getSequenceNumber());
-            }
-            if(maxSequence == -1) nextSequence = millisecondsTime == 0 ? 1 : 0;
-            else nextSequence = maxSequence+1;
-        }
-
+        long nextSequence = getNextSequenceNumber(millisecondsTime, stream);
         String actualId = millisecondsTime + "-" + nextSequence;
         return new StreamEntry(actualId, fields);
+    }
+
+    public static long getNextSequenceNumber(long millisecondsTime, RedisStream stream) {
+        if (stream == null || stream.isEmpty()) return millisecondsTime == 0 ? 1 : 0;
+
+        long maxSequence = -1;
+        for (StreamEntry entry : stream.getEntries()) {
+            if (entry.getMillisecondsTime() == millisecondsTime) {
+                maxSequence = Math.max(maxSequence, entry.getSequenceNumber());
+            }
+        }
+
+        if (maxSequence == -1) return millisecondsTime == 0 ? 1 : 0;
+
+        return maxSequence + 1;
+    }
+
+    public static String generateFullSequence(RedisStream stream) {
+        long millisecondsTime = System.currentTimeMillis();
+        long sequenceNumber = -1;
+
+        for(StreamEntry entry: stream.getEntries()) {
+            if(entry.getMillisecondsTime() == millisecondsTime) sequenceNumber = Math.max(sequenceNumber, entry.getSequenceNumber());
+        }
+
+        if(sequenceNumber == -1) sequenceNumber = 0;
+        else sequenceNumber++;
+
+        String id = "" + millisecondsTime + "-" + sequenceNumber;
+        return id;
     }
 
     @Override

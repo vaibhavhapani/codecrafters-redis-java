@@ -253,7 +253,7 @@ public class CommandHandlers {
 
         StreamEntry newEntry;
         try {
-            if(entryId.endsWith("-*")) newEntry = StreamEntry.createWithAutoSequence(entryId, fields, stream);
+            if("*".equals(entryId) || entryId.endsWith("-*")) newEntry = StreamEntry.createWithAutoSequence(entryId, fields, stream);
             else newEntry = new StreamEntry(entryId, fields);
         } catch (IllegalArgumentException e) {
             writeError("ERR Invalid stream ID specified as stream command argument", out);
@@ -264,7 +264,7 @@ public class CommandHandlers {
             writeError("ERR The ID specified in XADD must be greater than 0-0", out);
         }
 
-        if(!entryId.endsWith("-*")){
+        if(!"*".equals(entryId) && !entryId.endsWith("-*")){
             StreamEntry lastEntry = stream.getLastEntry();
             if (lastEntry != null && !newEntry.isIdGreaterThan(lastEntry)) {
                 writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
