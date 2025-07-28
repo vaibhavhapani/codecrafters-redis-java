@@ -260,6 +260,8 @@ public class CommandHandlers {
             return;
         }
 
+        System.out.println("============= id: " + entryId + "     new id: " + newEntry.getId());
+
         if (!newEntry.isIdGreaterThanZero()) {
             writeError("ERR The ID specified in XADD must be greater than 0-0", out);
         }
@@ -275,6 +277,6 @@ public class CommandHandlers {
         stream.addEntry(newEntry);
         dataStore.setStream(streamKey, stream);
 
-        writeBulkString(entryId, out);
+        writeBulkString(newEntry.getId(), out);
     }
 }
