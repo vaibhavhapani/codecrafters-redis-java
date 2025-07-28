@@ -74,7 +74,14 @@ public class StreamEntry {
 
         long nextSequence;
         if(stream == null || stream.isEmpty()) nextSequence = millisecondsTime == 0 ? 1 : 0;
-        else nextSequence = stream.getLastEntry().getSequenceNumber()+1;
+        else {
+            long maxSequence = -1;
+            for(StreamEntry entry: stream.getEntries()) {
+                if(entry.getMillisecondsTime() == millisecondsTime) maxSequence = Math.max(maxSequence, entry.getSequenceNumber());
+            }
+            if(maxSequence == -1) nextSequence = millisecondsTime == 0 ? 1 : 0;
+            else nextSequence = maxSequence+1;
+        }
 
         String actualId = millisecondsTime + "-" + nextSequence;
         return new StreamEntry(actualId, fields);
