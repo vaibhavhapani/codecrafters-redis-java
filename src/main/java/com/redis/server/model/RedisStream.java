@@ -35,21 +35,38 @@ public class RedisStream {
     }
 
     public List<StreamEntry> getEntriesInRange(String startId, String endId) {
-        StreamEntry startEntry = new StreamEntry(startId, new HashMap<>());
-        StreamEntry endEntry = new StreamEntry(endId, new HashMap<>());
-
         List<StreamEntry> entriesInRange = new ArrayList<>();
+        if(entries.isEmpty()) return entriesInRange;
+
+        String normalizedStartId = normalizeId(startId, true);
+        String normalizedEndId = normalizeId(endId, false);
+
+        StreamEntry startEntry = new StreamEntry(normalizedStartId, new HashMap<>());
+        StreamEntry endEntry = new StreamEntry(normalizedEndId, new HashMap<>());
 
         for (StreamEntry entry : entries) {
-            if (entry.getId().equals(startId) ||
-                    entry.getId().equals(endId) ||
-                    entry.isIdGreaterThan(startEntry) ||
-                    endEntry.isIdGreaterThan(entry)) {
+            boolean afterStart = entry.compareId(startEntry) >= 0;
+            boolean beforeEnd = entry.compareId(endEntry) <= 0;
+
+            if (afterStart && beforeEnd) {
                 entriesInRange.add(entry);
             }
         }
 
         return entriesInRange;
+    }
+
+    private String normalizeId(String id, boolean isStart) {
+        if (id.contains("-")) {
+            return id; // Already complete
+        }
+
+        // Incomplete ID - add sequence number
+        if (isStart) {
+            return id + "-0";  // Start with sequence 0
+        } else {
+            return id + "-" + Long.MAX_VALUE;  // End with maximum sequence
+        }
     }
 
     @Override

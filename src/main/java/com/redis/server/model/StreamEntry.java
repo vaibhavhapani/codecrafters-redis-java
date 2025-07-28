@@ -46,11 +46,15 @@ public class StreamEntry {
         return sequenceNumber;
     }
 
-    public boolean isIdGreaterThan(StreamEntry other) {
+    public int compareId(StreamEntry other) {
         if (this.millisecondsTime != other.millisecondsTime) {
-            return this.millisecondsTime > other.millisecondsTime;
+            return Long.compare(this.millisecondsTime, other.millisecondsTime);
         }
-        return this.sequenceNumber > other.sequenceNumber;
+        return Long.compare(this.sequenceNumber, other.sequenceNumber);
+    }
+
+    public boolean isIdGreaterThan(StreamEntry other) {
+        return compareId(other) > 0;
     }
 
     public boolean isIdGreaterThanZero() {
