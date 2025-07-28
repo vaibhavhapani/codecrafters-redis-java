@@ -379,9 +379,13 @@ public class Main {
 
         List<String> list = lists.get(key);
 
+        System.out.print("Key: " + key);
+
         // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
             String poppedElement = list.remove(0);
+
+            System.out.print("popped:  " + poppedElement);
 
             // return array - [key, value]
             writeSimpleString("*", "2", out);
