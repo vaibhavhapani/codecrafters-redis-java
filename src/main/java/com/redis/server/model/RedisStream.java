@@ -1,6 +1,7 @@
 package com.redis.server.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RedisStream {
@@ -31,6 +32,24 @@ public class RedisStream {
 
     public boolean isEmpty() {
         return entries.isEmpty();
+    }
+
+    public List<StreamEntry> getEntriesInRange(String startId, String endId) {
+        StreamEntry startEntry = new StreamEntry(startId, new HashMap<>());
+        StreamEntry endEntry = new StreamEntry(endId, new HashMap<>());
+
+        List<StreamEntry> entriesInRange = new ArrayList<>();
+
+        for (StreamEntry entry : entries) {
+            if (entry.getId().equals(startId) ||
+                    entry.getId().equals(endId) ||
+                    entry.isIdGreaterThan(startEntry) ||
+                    endEntry.isIdGreaterThan(entry)) {
+                entriesInRange.add(entry);
+            }
+        }
+
+        return entriesInRange;
     }
 
     @Override

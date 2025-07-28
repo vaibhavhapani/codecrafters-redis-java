@@ -27,6 +27,7 @@ public class RedisConstants {
     public static final String LPOP = "LPOP";
     public static final String BLPOP = "BLPOP";
     public static final String XADD = "XADD";
+    public static final String XRANGE = "XRANGE";
 
     // Response messages
     public static final String PONG = "PONG";

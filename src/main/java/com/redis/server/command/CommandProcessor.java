@@ -57,6 +57,9 @@ public class CommandProcessor {
             case RedisConstants.XADD:
                 handlers.handleXAdd(command, out);
                 break;
+            case RedisConstants.XRANGE:
+                handlers.handleXRange(command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

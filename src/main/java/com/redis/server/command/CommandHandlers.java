@@ -277,4 +277,37 @@ public class CommandHandlers {
 
         writeBulkString(newEntry.getId(), out);
     }
+
+    public void handleXRange(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XRANGE' command", out);
+            return;
+        }
+
+        String streamKey = command.get(1);
+        String startId = command.get(2);
+        String endId = command.get(3);
+
+        RedisStream stream = dataStore.getStream(streamKey);
+        if(stream == null) {
+            writeArray(0, out);
+            return;
+        }
+
+        List<StreamEntry> entries = stream.getEntriesInRange(startId, endId);
+        writeArray(entries.size(), out);
+
+        for(StreamEntry entry: entries) {
+            writeArray(2, out); // id, list of pairs
+            writeBulkString(entry.getId(), out);
+
+            Map<String, String> fields = entry.getFields();
+            writeArray(2*fields.size(), out); // key-value
+
+            for(Map.Entry<String, String> it: fields.entrySet()){
+                writeBulkString(it.getKey(), out);
+                writeBulkString(it.getValue(), out);
+            }
+        }
+    }
 }

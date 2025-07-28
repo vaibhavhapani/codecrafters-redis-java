@@ -1,9 +1,11 @@
 package com.redis.server.protocol;
 
 import com.redis.server.RedisConstants;
+import com.redis.server.model.StreamEntry;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 public class RespProtocol {
     public static void writeSimpleString(String message, OutputStream out) throws IOException {
@@ -32,5 +34,14 @@ public class RespProtocol {
 
     public static void writeArray(int length, OutputStream out) throws IOException {
         out.write((RedisConstants.ARRAY_PREFIX + length + RedisConstants.CRLF).getBytes());
+    }
+
+    public static void writeEntry(StreamEntry entry, OutputStream out) throws IOException {
+        Map<String, String> fields = entry.getFields();
+        writeInteger(fields.size(), out);
+        for(Map.Entry<String, String> it: fields.entrySet()){
+            writeBulkString(it.getKey(), out);
+            writeBulkString(it.getValue(), out);
+        }
     }
 }
