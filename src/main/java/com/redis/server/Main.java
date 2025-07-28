@@ -428,7 +428,7 @@ public class Main {
                         System.out.print("=================== Notifier out ===============");
 
                         it.remove();
-                        return;
+
                     }
                 }
             }
