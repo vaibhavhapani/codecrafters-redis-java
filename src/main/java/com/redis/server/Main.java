@@ -271,7 +271,7 @@ public class Main {
 
         String key = command.get(1);
         synchronized (lists){
-            if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
+            if (!lists.containsKey(key)) lists.putIfAbsent(key, Collections.synchronizedList(new ArrayList<>()));
             List<String> list = lists.get(key);
 
             int elements = command.size();
@@ -381,7 +381,7 @@ public class Main {
         double timeOut = Double.parseDouble(command.get(2));
 
         synchronized (lists){
-            System.out.println(lists);
+            System.out.println("lists: " + lists);
             List<String> list = lists.get(key);
             System.out.println("[BLPOP Handler] Key: " + key + "=========================");
 
