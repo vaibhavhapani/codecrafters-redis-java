@@ -1,6 +1,5 @@
 package com.redis.server.command;
 
-import com.redis.server.Main;
 import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
 import com.redis.server.storage.DataStore;
@@ -73,7 +72,7 @@ public class CommandHandlers {
             dataStore.setValue(key, value);
         }
 
-        writeSimpleString("OK", out);
+        writeSimpleString(RedisConstants.OK, out);
     }
 
     public void handleGet(List<String> command, OutputStream out) throws IOException {

@@ -1,12 +1,13 @@
 package com.redis.server.command;
 
+import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
+import com.redis.server.protocol.RespProtocol;
 import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import static com.redis.server.protocol.RespProtocol.writeSimpleString;
 
 public class CommandProcessor {
 
@@ -20,44 +21,44 @@ public class CommandProcessor {
         String commandName = command.get(0).toUpperCase();
 
         switch (commandName) {
-            case "PING":
+            case RedisConstants.PING:
                 handlers.handlePing(command, out);
                 break;
-            case "ECHO":
+            case RedisConstants.ECHO:
                 handlers.handleEcho(command, out);
                 break;
-            case "TYPE":
+            case RedisConstants.TYPE:
                 handlers.handleType(command, out);
                 break;
-            case "SET":
+            case RedisConstants.SET:
                 handlers.handleSet(command, out);
                 break;
-            case "GET":
+            case RedisConstants.GET:
                 handlers.handleGet(command, out);
                 break;
-            case "RPUSH":
+            case RedisConstants.RPUSH:
                 handlers.handleRPush(command, out);
                 break;
-            case "LPUSH":
+            case RedisConstants.LPUSH:
                 handlers.handleLPush(command, out);
                 break;
-            case "LRANGE":
+            case RedisConstants.LRANGE:
                 handlers.handleLRange(command, out);
                 break;
-            case "LLEN":
+            case RedisConstants.LLEN:
                 handlers.handleLLen(command, out);
                 break;
-            case "LPOP":
+            case RedisConstants.LPOP:
                 handlers.handleLPop(command, out);
                 break;
-            case "BLPOP":
+            case RedisConstants.BLPOP:
                 handlers.handleBLPop(command, out);
                 break;
-            case "XADD":
+            case RedisConstants.XADD:
                 handlers.handleXAdd(command, out);
                 break;
             default:
-                out.write(("-ERR unknown command '" + commandName + "'\r\n").getBytes());
+                RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;
         }
     }
