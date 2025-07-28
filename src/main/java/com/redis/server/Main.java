@@ -380,9 +380,8 @@ public class Main {
         String key = command.get(1);
         double timeOut = Double.parseDouble(command.get(2));
 
-        System.out.println(lists);
-
         synchronized (lists){
+            System.out.println(lists);
             List<String> list = lists.get(key);
             System.out.println("[BLPOP Handler] Key: " + key + "=========================");
 
