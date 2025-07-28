@@ -380,7 +380,7 @@ public class Main {
         String key = command.get(1);
         double timeOut = Double.parseDouble(command.get(2));
 
-        for(String s: lists.get(key)) System.out.println(s + " ");
+        System.out.println(lists);
 
         synchronized (lists){
             List<String> list = lists.get(key);
