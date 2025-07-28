@@ -233,32 +233,43 @@ public class CommandHandlers {
             return;
         }
 
+        if ((command.size() - 3) % 2 != 0) {
+            writeError("ERR wrong number of arguments for XADD", out);
+            return;
+        }
+
         String streamKey = command.get(1);
         String entryId = command.get(2);
 
         Map<String, String> fields = new HashMap<>();
-        for(int i = 3; i < command.size(); i+=2) {
+        for (int i = 3; i < command.size(); i += 2) {
             String key = command.get(i);
-            String value = command.get(i+1);
+            String value = command.get(i + 1);
             fields.put(key, value);
         }
 
-        StreamEntry entry = new StreamEntry(entryId, fields);
-        if(!entry.isIdGreaterThanZero()) {
+        StreamEntry newEntry;
+        try {
+            newEntry = new StreamEntry(entryId, fields);
+        } catch (IllegalArgumentException e) {
+            writeError("ERR Invalid stream ID specified as stream command argument", out);
+            return;
+        }
+
+        if (!newEntry.isIdGreaterThanZero()) {
             writeError("ERR The ID specified in XADD must be greater than 0-0", out);
         }
 
         RedisStream stream = dataStore.getStream(streamKey);
-        if(stream == null) stream = new RedisStream();
-        else {
-            List<StreamEntry> entries = stream.getEntries();
-            if(!entry.isIdGreaterThan(entries.get(entries.size()-1))) {
-                writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
-                return;
-            }
+        if (stream == null) stream = new RedisStream();
+
+        StreamEntry lastEntry = stream.getLastEntry();
+        if (lastEntry != null && !newEntry.isIdGreaterThan(lastEntry)) {
+            writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
+            return;
         }
 
-        stream.addEntry(entry);
+        stream.addEntry(newEntry);
         dataStore.setStream(streamKey, stream);
 
         writeBulkString(entryId, out);

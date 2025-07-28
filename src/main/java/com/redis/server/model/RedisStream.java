@@ -18,6 +18,13 @@ public class RedisStream {
         return entries;
     }
 
+    public StreamEntry getLastEntry() {
+        if (entries.isEmpty()) {
+            return null;
+        }
+        return entries.get(entries.size() - 1);
+    }
+
     public int size() {
         return entries.size();
     }
