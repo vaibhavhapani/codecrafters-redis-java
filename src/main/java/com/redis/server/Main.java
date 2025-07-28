@@ -270,17 +270,19 @@ public class Main {
         }
 
         String key = command.get(1);
-        if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
-        List<String> list = lists.get(key);
+        synchronized (lists){
+            if (!lists.containsKey(key)) lists.put(key, new ArrayList<>());
+            List<String> list = lists.get(key);
 
-        int elements = command.size();
-        for (int i = 2; i < elements; i++) {
-            String element = command.get(i);
-            list.add(element);
-            lists.put(key, list);
+            int elements = command.size();
+            for (int i = 2; i < elements; i++) {
+                String element = command.get(i);
+                list.add(element);
+                lists.put(key, list);
+            }
+
+            writeSimpleString(":", String.valueOf(list.size()), out);
         }
-
-        writeSimpleString(":", String.valueOf(list.size()), out);
         notifyBlockedClients(key);
     }
 
@@ -378,26 +380,26 @@ public class Main {
         String key = command.get(1);
         double timeOut = Double.parseDouble(command.get(2));
 
-        List<String> list = lists.get(key);
-        System.out.println("[BLPOP Handler] Key: " + key + "=========================");
+        synchronized (lists){
+            List<String> list = lists.get(key);
+            System.out.println("[BLPOP Handler] Key: " + key + "=========================");
 
 
-        // If the list is not empty, pop the element
-        if (list != null && !list.isEmpty()) {
-            String poppedElement = list.remove(0);
+            // If the list is not empty, pop the element
+            if (list != null && !list.isEmpty()) {
+                String poppedElement = list.remove(0);
 
-            System.out.println("[BLPOP Handler] popped:  " + poppedElement);
+                System.out.println("[BLPOP Handler] popped:  " + poppedElement);
 
-            // return array - [key, value]
-            writeSimpleString("*", "2", out);
-            writeBulkString(key, out);
-            writeBulkString(poppedElement, out);
+                // return array - [key, value]
+                writeSimpleString("*", "2", out);
+                writeBulkString(key, out);
+                writeBulkString(poppedElement, out);
 
-            out.flush();
+                System.out.print("=================== out ===============");
 
-            System.out.print("=================== out ===============");
-
-            return;
+                return;
+            }
         }
 
         // If the list is empty, the command blocks until timeout reached or an element is pushed
@@ -422,8 +424,6 @@ public class Main {
                         writeSimpleString("*", "2", client.out);
                         writeBulkString(key, client.out);
                         writeBulkString(poppedElement, client.out);
-
-                        client.out.flush();
 
                         System.out.print("=================== Notifier out ===============");
 
