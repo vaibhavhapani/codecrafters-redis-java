@@ -1,5 +1,7 @@
 package com.redis.server.storage;
 
+import com.redis.server.model.RedisStream;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,7 +10,7 @@ public class DataStore {
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, Map<String, String[]>> streams = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, RedisStream> streams = new ConcurrentHashMap<>();
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -48,15 +50,15 @@ public class DataStore {
         return lists.containsKey(key);
     }
 
-    public Map<String, String[]> getEntry(String key) {
+    public RedisStream getStream(String key) {
         return streams.get(key);
     }
 
-    public void setEntry(String key, Map<String, String[]> entries) {
-        streams.put(key, entries);
+    public void setStream(String key, RedisStream stream) {
+        streams.put(key, stream);
     }
 
-    public boolean hasEntryKey(String key) {
+    public boolean hasStreamKey(String key) {
         return streams.containsKey(key);
     }
 
@@ -68,5 +70,14 @@ public class DataStore {
     private void cleanupExpiredKey(String key) {
         store.remove(key);
         expiry.remove(key);
+    }
+
+    public String getKeyType(String key) {
+        if (hasKey(key)) {
+            return "string";
+        } else if (hasStreamKey(key)) {
+            return "stream";
+        }
+        return "none";
     }
 }

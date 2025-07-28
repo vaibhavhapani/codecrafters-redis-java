@@ -2,6 +2,8 @@ package com.redis.server.command;
 
 import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
+import com.redis.server.model.RedisStream;
+import com.redis.server.model.StreamEntry;
 import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.redis.server.protocol.RespProtocol.*;
 
@@ -41,18 +44,10 @@ public class CommandHandlers {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'TYPE' command", out);
             return;
         }
+
         String key = command.get(1);
-
-        if (dataStore.hasEntryKey(key)) {
-            writeSimpleString("stream", out);
-            return;
-        }
-
-        if (dataStore.hasKey(key)) {
-            writeSimpleString(RedisConstants.STRING_TYPE, out);
-            return;
-        }
-        writeSimpleString(RedisConstants.NONE_TYPE, out);
+        String keyType = dataStore.getKeyType(key);
+        writeSimpleString(keyType, out);
     }
 
     public void handleSet(List<String> command, OutputStream out) throws IOException {
@@ -234,13 +229,38 @@ public class CommandHandlers {
 
     public void handleXAdd(List<String> command, OutputStream out) throws IOException {
         if (command.size() < 5) {
-            out.write("-ERR wrong number of arguments for 'XADD' command\r\n".getBytes());
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XADD' command", out);
             return;
         }
-        String streamKey = command.get(1);
-        if (!dataStore.hasEntryKey(streamKey)) dataStore.setEntry(streamKey, new HashMap<>());
 
-        String keyId = command.get(2);
-        writeBulkString(keyId, out);
+        String streamKey = command.get(1);
+        String entryId = command.get(2);
+
+        Map<String, String> fields = new HashMap<>();
+        for(int i = 3; i < command.size(); i+=2) {
+            String key = command.get(i);
+            String value = command.get(i+1);
+            fields.put(key, value);
+        }
+
+        StreamEntry entry = new StreamEntry(entryId, fields);
+        if(!entry.isIdGreaterThanZero()) {
+            writeError("ERR The ID specified in XADD must be greater than 0-0", out);
+        }
+
+        RedisStream stream = dataStore.getStream(streamKey);
+        if(stream == null) stream = new RedisStream();
+        else {
+            List<StreamEntry> entries = stream.getEntries();
+            if(!entry.isIdGreaterThan(entries.get(entries.size()-1))) {
+                writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
+                return;
+            }
+        }
+
+        stream.addEntry(entry);
+        dataStore.setStream(streamKey, stream);
+
+        writeBulkString(entryId, out);
     }
 }
