@@ -241,6 +241,9 @@ public class CommandHandlers {
         String streamKey = command.get(1);
         String entryId = command.get(2);
 
+        RedisStream stream = dataStore.getStream(streamKey);
+        if (stream == null) stream = new RedisStream();
+
         Map<String, String> fields = new HashMap<>();
         for (int i = 3; i < command.size(); i += 2) {
             String key = command.get(i);
@@ -250,7 +253,8 @@ public class CommandHandlers {
 
         StreamEntry newEntry;
         try {
-            newEntry = new StreamEntry(entryId, fields);
+            if(entryId.endsWith("-*")) newEntry = StreamEntry.createWithAutoSequence(entryId, fields, stream);
+            else newEntry = new StreamEntry(entryId, fields);
         } catch (IllegalArgumentException e) {
             writeError("ERR Invalid stream ID specified as stream command argument", out);
             return;
@@ -260,13 +264,12 @@ public class CommandHandlers {
             writeError("ERR The ID specified in XADD must be greater than 0-0", out);
         }
 
-        RedisStream stream = dataStore.getStream(streamKey);
-        if (stream == null) stream = new RedisStream();
-
-        StreamEntry lastEntry = stream.getLastEntry();
-        if (lastEntry != null && !newEntry.isIdGreaterThan(lastEntry)) {
-            writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
-            return;
+        if(!entryId.endsWith("-*")){
+            StreamEntry lastEntry = stream.getLastEntry();
+            if (lastEntry != null && !newEntry.isIdGreaterThan(lastEntry)) {
+                writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
+                return;
+            }
         }
 
         stream.addEntry(newEntry);

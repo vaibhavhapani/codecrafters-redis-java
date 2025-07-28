@@ -56,6 +56,30 @@ public class StreamEntry {
         return millisecondsTime > 0 || (millisecondsTime == 0 && sequenceNumber > 0);
     }
 
+    public static StreamEntry createWithAutoSequence(String idTemplate, Map<String, String> fields,
+                                                     RedisStream stream)
+            throws IllegalArgumentException {
+
+        String[] parts = idTemplate.split("-");
+        if (parts.length != 2 || !"*".equals(parts[1])) {
+            throw new IllegalArgumentException("Invalid ID template for auto-sequence: " + idTemplate);
+        }
+
+        long millisecondsTime;
+        try {
+            millisecondsTime = Long.parseLong(parts[0]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid milliseconds time in ID template: " + idTemplate);
+        }
+
+        long nextSequence;
+        if(stream == null || stream.isEmpty()) nextSequence = millisecondsTime == 0 ? 1 : 0;
+        else nextSequence = stream.getLastEntry().getSequenceNumber()+1;
+
+        String actualId = millisecondsTime + "-" + nextSequence;
+        return new StreamEntry(actualId, fields);
+    }
+
     @Override
     public String toString() {
         return "StreamEntry{id='" + id + "', fields=" + fields + "}";
