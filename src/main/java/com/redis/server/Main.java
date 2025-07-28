@@ -379,7 +379,7 @@ public class Main {
 
         List<String> list = lists.get(key);
 
-        System.out.print("Key: " + key);
+        System.out.print("Key: " + key + "=========================");
 
         // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
