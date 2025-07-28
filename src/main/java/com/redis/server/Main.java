@@ -378,14 +378,14 @@ public class Main {
         double timeOut = Double.parseDouble(command.get(2));
 
         List<String> list = lists.get(key);
+        System.out.println("[BLPOP Handler] Key: " + key + "=========================");
 
-        System.out.println("Key: " + key + "=========================");
 
         // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
             String poppedElement = list.remove(0);
 
-            System.out.println("popped:  " + poppedElement);
+            System.out.println("[BLPOP Handler] popped:  " + poppedElement);
 
             // return array - [key, value]
             writeSimpleString("*", "2", out);
@@ -414,6 +414,7 @@ public class Main {
 
                     if (list != null && !list.isEmpty()) {
                         String poppedElement = list.remove(0);
+                        System.out.println("[Notifier] popped:  " + poppedElement);
 
                         writeSimpleString("*", "2", client.out);
                         writeBulkString(key, client.out);
