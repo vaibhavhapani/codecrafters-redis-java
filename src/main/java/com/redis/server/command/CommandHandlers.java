@@ -312,13 +312,15 @@ public class CommandHandlers {
     }
 
     public void handleXRead(List<String> command, OutputStream out) throws IOException {
-        if (command.size() < 3) {
+        if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XREAD' command", out);
             return;
         }
 
-        String streamKey = command.get(1);
-        String startId = command.get(2);
+        System.out.println(command.get(1)); // should print "streams"
+
+        String streamKey = command.get(2);
+        String startId = command.get(3);
 
         RedisStream stream = dataStore.getStream(streamKey);
         if(stream == null) {

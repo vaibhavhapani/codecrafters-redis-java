@@ -36,10 +36,7 @@ public class RedisStream {
 
     public List<StreamEntry> getEntriesInRange(String startId, String endId, boolean isStartExclusive) {
         List<StreamEntry> entriesInRange = new ArrayList<>();
-        if(entries.isEmpty()) {
-            System.out.println("stream empty");
-            return entriesInRange;
-        }
+        if(entries.isEmpty()) return entriesInRange;
 
         String normalizedStartId = normalizeId(startId, true);
         String normalizedEndId = normalizeId(endId, false);
