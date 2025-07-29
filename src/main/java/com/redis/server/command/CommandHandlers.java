@@ -334,6 +334,8 @@ public class CommandHandlers {
             String startId = command.get(i);
             String endId = command.get(i+1);
 
+            System.out.println("------"+streamKey+"--------"+startId+"----"+endId);
+
             RedisStream stream = dataStore.getStream(streamKey);
             if(stream == null) {
                 writeArray(0, out);
