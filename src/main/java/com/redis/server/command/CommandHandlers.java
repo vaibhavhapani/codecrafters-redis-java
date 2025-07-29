@@ -323,32 +323,33 @@ public class CommandHandlers {
         }
 
         List<String> streams = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
+
         int i = 2;
-        while(i < command.size() && !command.get(i).contains("-")) {
-            streams.add(command.get(i++));
+        while(i < command.size() && !command.get(i).contains("-")) streams.add(command.get(i++));
+        while(i < command.size()) ids.add(command.get(i++));
+
+        if (streams.size() != ids.size()) {
+            System.out.println(streams.size() + " " + ids.size());
+            writeError("ERR Unbalanced XREAD streams and IDs count", out);
+            return;
         }
 
         int totalStreamKeys = streams.size();
         writeArray(totalStreamKeys, out);
 
-        int j = 0;
-        while(i < command.size()-1){
-            String streamKey = streams.get(j++);
-            String startId = command.get(i);
-            String endId = command.get(i+1);
-
-            System.out.println("------"+streamKey+"--------"+startId+"----"+endId);
+        for (i = 0; i < streams.size(); i++) {
+            String streamKey = streams.get(i);
+            String startId = ids.get(i);
 
             RedisStream stream = dataStore.getStream(streamKey);
-            if(stream == null) {
+            if (stream == null) {
                 writeArray(0, out);
-                return;
+                continue;
             }
 
             List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
             writeXReadResponse(streamKey, entries, out);
-
-            i+=2;
         }
     }
 
