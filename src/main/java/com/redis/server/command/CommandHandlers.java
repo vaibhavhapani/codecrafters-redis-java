@@ -317,7 +317,10 @@ public class CommandHandlers {
             return;
         }
 
-        System.out.println(command.get(1)); // should print "streams"
+        if (!"STREAMS".equalsIgnoreCase(command.get(1))) {
+            writeError("ERR Syntax error in XREAD command", out);
+            return;
+        }
 
         List<String> streams = new ArrayList<>();
         int i = 2;
@@ -342,7 +345,7 @@ public class CommandHandlers {
                 return;
             }
 
-            List<StreamEntry> entries = stream.getEntriesInRange(startId, endId, true);
+            List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
             writeXReadResponse(streamKey, entries, out);
 
             i+=2;
