@@ -319,19 +319,35 @@ public class CommandHandlers {
 
         System.out.println(command.get(1)); // should print "streams"
 
-        String streamKey = command.get(2);
-        String startId = command.get(3);
-
-        RedisStream stream = dataStore.getStream(streamKey);
-        if(stream == null) {
-            System.out.println("stream empty");
-            writeArray(0, out);
-            return;
+        List<String> streams = new ArrayList<>();
+        int i = 2;
+        while(i < command.size() && !command.get(i).contains("-")) {
+            streams.add(command.get(i++));
         }
 
-        List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
+        int totalStreamKeys = streams.size();
+        writeArray(totalStreamKeys, out);
 
-        writeArray(1, out); // array of 1 streamKey
+        int j = 0;
+        while(i < command.size()-1){
+            String streamKey = streams.get(j++);
+            String startId = command.get(i);
+            String endId = command.get(i+1);
+
+            RedisStream stream = dataStore.getStream(streamKey);
+            if(stream == null) {
+                writeArray(0, out);
+                return;
+            }
+
+            List<StreamEntry> entries = stream.getEntriesInRange(startId, endId, true);
+            writeXReadResponse(streamKey, entries, out);
+
+            i+=2;
+        }
+    }
+
+    private void writeXReadResponse(String streamKey, List<StreamEntry> entries, OutputStream out) throws IOException {
         writeArray(entries.size()+1, out); // [streamKey, array of entries]
         writeBulkString(streamKey, out);
         writeArray(entries.size(), out); // no of entries in an array
@@ -349,4 +365,5 @@ public class CommandHandlers {
             }
         }
     }
+
 }
