@@ -322,6 +322,7 @@ public class CommandHandlers {
 
         RedisStream stream = dataStore.getStream(streamKey);
         if(stream == null) {
+            System.out.println("stream empty");
             writeArray(0, out);
             return;
         }
