@@ -279,7 +279,7 @@ public class CommandHandlers {
     }
 
     public void handleXRange(List<String> command, OutputStream out) throws IOException {
-        if (command.size() < 3) {
+        if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XRANGE' command", out);
             return;
         }
@@ -294,8 +294,44 @@ public class CommandHandlers {
             return;
         }
 
-        List<StreamEntry> entries = stream.getEntriesInRange(startId, endId);
+        List<StreamEntry> entries = stream.getEntriesInRange(startId, endId, false);
         writeArray(entries.size(), out);
+
+        for(StreamEntry entry: entries) {
+            writeArray(2, out); // id, list of pairs
+            writeBulkString(entry.getId(), out);
+
+            Map<String, String> fields = entry.getFields();
+            writeArray(2*fields.size(), out); // key-value
+
+            for(Map.Entry<String, String> it: fields.entrySet()){
+                writeBulkString(it.getKey(), out);
+                writeBulkString(it.getValue(), out);
+            }
+        }
+    }
+
+    public void handleXRead(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XREAD' command", out);
+            return;
+        }
+
+        String streamKey = command.get(1);
+        String startId = command.get(2);
+
+        RedisStream stream = dataStore.getStream(streamKey);
+        if(stream == null) {
+            writeArray(0, out);
+            return;
+        }
+
+        List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
+
+        writeArray(1, out); // array of 1 streamKey
+        writeArray(entries.size()+1, out); // [streamKey, array of entries]
+        writeBulkString(streamKey, out);
+        writeArray(entries.size(), out); // no of entries in an array
 
         for(StreamEntry entry: entries) {
             writeArray(2, out); // id, list of pairs

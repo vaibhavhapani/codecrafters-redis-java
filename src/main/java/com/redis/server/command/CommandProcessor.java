@@ -60,6 +60,9 @@ public class CommandProcessor {
             case RedisConstants.XRANGE:
                 handlers.handleXRange(command, out);
                 break;
+            case RedisConstants.XREAD:
+                handlers.handleXRead(command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

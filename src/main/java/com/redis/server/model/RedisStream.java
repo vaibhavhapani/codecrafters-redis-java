@@ -34,7 +34,7 @@ public class RedisStream {
         return entries.isEmpty();
     }
 
-    public List<StreamEntry> getEntriesInRange(String startId, String endId) {
+    public List<StreamEntry> getEntriesInRange(String startId, String endId, boolean isStartExclusive) {
         List<StreamEntry> entriesInRange = new ArrayList<>();
         if(entries.isEmpty()) return entriesInRange;
 
@@ -45,7 +45,7 @@ public class RedisStream {
         StreamEntry endEntry = new StreamEntry(normalizedEndId, new HashMap<>());
 
         for (StreamEntry entry : entries) {
-            boolean afterStart = entry.compareId(startEntry) >= 0;
+            boolean afterStart = isStartExclusive ? entry.compareId(startEntry) > 0 : entry.compareId(startEntry) >= 0;
             boolean beforeEnd = entry.compareId(endEntry) <= 0;
 
             if (afterStart && beforeEnd) {
