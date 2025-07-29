@@ -57,6 +57,8 @@ public class RedisStream {
     }
 
     private String normalizeId(String id, boolean isStart) {
+        if("-".equals(id)) return getEntries().get(0).getId();
+
         if (id.contains("-")) {
             return id; // Already complete
         }
