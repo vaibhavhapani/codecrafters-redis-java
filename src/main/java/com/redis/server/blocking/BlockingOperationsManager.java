@@ -45,6 +45,7 @@ public class BlockingOperationsManager {
                         RespProtocol.writeBulkString(poppedElement, client.getOutputStream());
 
                         it.remove();
+
                         return;
                     }
                 }

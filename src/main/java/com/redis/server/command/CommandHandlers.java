@@ -330,7 +330,6 @@ public class CommandHandlers {
         while(i < command.size()) ids.add(command.get(i++));
 
         if (streams.size() != ids.size()) {
-            System.out.println(streams.size() + " " + ids.size());
             writeError("ERR Unbalanced XREAD streams and IDs count", out);
             return;
         }
