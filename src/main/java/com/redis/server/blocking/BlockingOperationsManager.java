@@ -23,8 +23,11 @@ public class BlockingOperationsManager {
         );
     }
 
-    public void addBlockedClient(String key, double timeoutSeconds, java.io.OutputStream out) {
+    public void addBlockedClient(String key, double timeoutSeconds, java.io.OutputStream out, int num) {
         blockedClients.offer(new BlockedClient(key, timeoutSeconds, out));
+        System.out.println("client " + num + " Key blocked: " + key + " time: " + System.currentTimeMillis());
+        System.out.println(out);
+        System.out.println("\n\n");
     }
 
     public void notifyBlockedClients(String key) throws IOException {

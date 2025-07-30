@@ -201,7 +201,7 @@ public class CommandHandlers {
         }
     }
 
-    public void handleBLPop(List<String> command, OutputStream out) throws IOException {
+    public void handleBLPop(List<String> command, OutputStream out, int num) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'BLPOP' command", out);
             return;
@@ -226,7 +226,7 @@ public class CommandHandlers {
         }
 
         // If the list is empty, the command blocks until timeout reached or an element is pushed
-        blockingManager.addBlockedClient(key, timeOut, out);
+        blockingManager.addBlockedClient(key, timeOut, out, num);
     }
 
     public void handleXAdd(List<String> command, OutputStream out) throws IOException {

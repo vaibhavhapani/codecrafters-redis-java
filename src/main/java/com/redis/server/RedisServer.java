@@ -15,6 +15,7 @@ public class RedisServer {
     private final DataStore dataStore;
     private final BlockingOperationsManager blockingManager;
     private final CommandProcessor commandProcessor;
+    private int num = 1;
 
     public RedisServer(int port) {
         this.port = port;
@@ -33,7 +34,7 @@ public class RedisServer {
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    new Thread(new ClientHandler(clientSocket, commandProcessor)).start();
+                    new Thread(new ClientHandler(clientSocket, commandProcessor, num++)).start();
                 } catch (IOException e) {
                     System.err.println("Error accepting client connection: " + e.getMessage());
                 }

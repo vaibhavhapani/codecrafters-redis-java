@@ -17,7 +17,7 @@ public class CommandProcessor {
         this.handlers = new CommandHandlers(dataStore, blockingManager);
     }
 
-    public void processCommand(List<String> command, OutputStream out) throws IOException {
+    public void processCommand(List<String> command, OutputStream out, int num) throws IOException {
         String commandName = command.get(0).toUpperCase();
 
         switch (commandName) {
@@ -52,7 +52,7 @@ public class CommandProcessor {
                 handlers.handleLPop(command, out);
                 break;
             case RedisConstants.BLPOP:
-                handlers.handleBLPop(command, out);
+                handlers.handleBLPop(command, out, num);
                 break;
             case RedisConstants.XADD:
                 handlers.handleXAdd(command, out);

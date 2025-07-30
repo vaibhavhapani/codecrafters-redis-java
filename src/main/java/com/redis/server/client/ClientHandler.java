@@ -14,15 +14,17 @@ import java.util.List;
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final CommandProcessor commandProcessor;
+    int num;
 
-    public ClientHandler(Socket clientSocket, CommandProcessor commandProcessor) {
+    public ClientHandler(Socket clientSocket, CommandProcessor commandProcessor, int num) {
         this.clientSocket = clientSocket;
         this.commandProcessor = commandProcessor;
+        this.num = num;
     }
 
     @Override
     public void run() {
-        System.out.println("client sent: " + System.currentTimeMillis());
+        System.out.println("client " + num + " sent: " + System.currentTimeMillis());
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
@@ -31,7 +33,7 @@ public class ClientHandler implements Runnable {
                 if (line.startsWith(RedisConstants.ARRAY_PREFIX)) {
                     List<String> command = parseRespArray(line, in);
                     if (!command.isEmpty()) {
-                        commandProcessor.processCommand(command, out);
+                        commandProcessor.processCommand(command, out, num);
                         out.flush();
                     }
                 }
