@@ -162,6 +162,7 @@ public class CommandHandlers {
         }
 
         String key = command.get(1);
+
         List<String> list = dataStore.getList(key);
 
         int size = (list == null || list.isEmpty()) ? 0 : list.size();
