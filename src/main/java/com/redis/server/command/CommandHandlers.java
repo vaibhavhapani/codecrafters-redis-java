@@ -162,7 +162,6 @@ public class CommandHandlers {
         }
 
         String key = command.get(1);
-
         List<String> list = dataStore.getList(key);
 
         int size = (list == null || list.isEmpty()) ? 0 : list.size();
@@ -201,7 +200,7 @@ public class CommandHandlers {
         }
     }
 
-    public void handleBLPop(List<String> command, OutputStream out, int num) throws IOException {
+    public void handleBLPop(List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'BLPOP' command", out);
             return;
@@ -215,7 +214,6 @@ public class CommandHandlers {
         // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
             String poppedElement = list.remove(0);
-            System.out.println("client " + num + "[blpop] key: " + key + " ======= " + "popped: " + poppedElement);
 
             // return array - [key, value]
             writeArray(2, out);
@@ -226,7 +224,7 @@ public class CommandHandlers {
         }
 
         // If the list is empty, the command blocks until timeout reached or an element is pushed
-        blockingManager.addBlockedClient(key, timeOut, out, num);
+        blockingManager.addBlockedClient(key, timeOut, out);
     }
 
     public void handleXAdd(List<String> command, OutputStream out) throws IOException {

@@ -23,11 +23,8 @@ public class BlockingOperationsManager {
         );
     }
 
-    public void addBlockedClient(String key, double timeoutSeconds, java.io.OutputStream out, int num) {
+    public void addBlockedClient(String key, double timeoutSeconds, java.io.OutputStream out) {
         blockedClients.offer(new BlockedClient(key, timeoutSeconds, out));
-        System.out.println("client " + num + " Key blocked: " + key + " time: " + System.currentTimeMillis());
-        System.out.println(out);
-        System.out.println("\n\n");
     }
 
     public void notifyBlockedClients(String key) throws IOException {
@@ -42,8 +39,6 @@ public class BlockingOperationsManager {
 
                     if (list != null && !list.isEmpty()) {
                         String poppedElement = list.remove(0);
-
-                        System.out.println("[notify] key: " + key + " ======= " + "popped: " + poppedElement);
 
                         RespProtocol.writeArray(2, client.getOutputStream());
                         RespProtocol.writeBulkString(key, client.getOutputStream());
