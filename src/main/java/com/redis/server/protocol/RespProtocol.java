@@ -2,9 +2,11 @@ package com.redis.server.protocol;
 
 import com.redis.server.RedisConstants;
 import com.redis.server.model.StreamEntry;
+import com.redis.server.model.StreamReadResult;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 public class RespProtocol {
@@ -42,6 +44,37 @@ public class RespProtocol {
         for(Map.Entry<String, String> it: fields.entrySet()){
             writeBulkString(it.getKey(), out);
             writeBulkString(it.getValue(), out);
+        }
+    }
+
+    public static void writeXReadResults(List<StreamReadResult> results, OutputStream out) throws IOException {
+        if (results.isEmpty()) {
+            RespProtocol.writeNullBulkString(out);
+            return;
+        }
+
+        RespProtocol.writeArray(results.size(), out);
+        for (StreamReadResult result : results) {
+            writeXReadResponse(result.getStreamKey(), result.getEntries(), out);
+        }
+    }
+
+    public static void writeXReadResponse(String streamKey, List<StreamEntry> entries, OutputStream out) throws IOException {
+        RespProtocol.writeArray(2, out); // [streamKey, array of entries]
+        RespProtocol.writeBulkString(streamKey, out);
+        RespProtocol.writeArray(entries.size(), out); // no of entries in an array
+
+        for(StreamEntry entry: entries) {
+            RespProtocol.writeArray(2, out); // id, list of pairs
+            RespProtocol.writeBulkString(entry.getId(), out);
+
+            Map<String, String> fields = entry.getFields();
+            RespProtocol.writeArray(2*fields.size(), out); // key-value
+
+            for(Map.Entry<String, String> it: fields.entrySet()){
+                RespProtocol.writeBulkString(it.getKey(), out);
+                RespProtocol.writeBulkString(it.getValue(), out);
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
 import com.redis.server.model.RedisStream;
 import com.redis.server.model.StreamEntry;
+import com.redis.server.model.StreamReadResult;
+import com.redis.server.protocol.RespProtocol;
 import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
@@ -253,7 +255,8 @@ public class CommandHandlers {
 
         StreamEntry newEntry;
         try {
-            if("*".equals(entryId) || entryId.endsWith("-*")) newEntry = StreamEntry.createWithAutoSequence(entryId, fields, stream);
+            if ("*".equals(entryId) || entryId.endsWith("-*"))
+                newEntry = StreamEntry.createWithAutoSequence(entryId, fields, stream);
             else newEntry = new StreamEntry(entryId, fields);
         } catch (IllegalArgumentException e) {
             writeError("ERR Invalid stream ID specified as stream command argument", out);
@@ -264,7 +267,7 @@ public class CommandHandlers {
             writeError("ERR The ID specified in XADD must be greater than 0-0", out);
         }
 
-        if(!"*".equals(entryId) && !entryId.endsWith("-*")){
+        if (!"*".equals(entryId) && !entryId.endsWith("-*")) {
             StreamEntry lastEntry = stream.getLastEntry();
             if (lastEntry != null && !newEntry.isIdGreaterThan(lastEntry)) {
                 writeError("ERR The ID specified in XADD is equal or smaller than the target stream top item", out);
@@ -274,6 +277,8 @@ public class CommandHandlers {
 
         stream.addEntry(newEntry);
         dataStore.setStream(streamKey, stream);
+
+        blockingManager.notifyBlockedStreamClients(streamKey);
 
         writeBulkString(newEntry.getId(), out);
     }
@@ -289,7 +294,7 @@ public class CommandHandlers {
         String endId = command.get(3);
 
         RedisStream stream = dataStore.getStream(streamKey);
-        if(stream == null) {
+        if (stream == null) {
             writeArray(0, out);
             return;
         }
@@ -297,14 +302,14 @@ public class CommandHandlers {
         List<StreamEntry> entries = stream.getEntriesInRange(startId, endId, false);
         writeArray(entries.size(), out);
 
-        for(StreamEntry entry: entries) {
+        for (StreamEntry entry : entries) {
             writeArray(2, out); // id, list of pairs
             writeBulkString(entry.getId(), out);
 
             Map<String, String> fields = entry.getFields();
-            writeArray(2*fields.size(), out); // key-value
+            writeArray(2 * fields.size(), out); // key-value
 
-            for(Map.Entry<String, String> it: fields.entrySet()){
+            for (Map.Entry<String, String> it : fields.entrySet()) {
                 writeBulkString(it.getKey(), out);
                 writeBulkString(it.getValue(), out);
             }
@@ -317,29 +322,39 @@ public class CommandHandlers {
             return;
         }
 
-        if (!"STREAMS".equalsIgnoreCase(command.get(1))) {
+        int currentIndex = 1;
+        double blockTimeout = -1;
+
+        if ("BLOCK".equalsIgnoreCase(command.get(currentIndex))) {
+            blockTimeout = Double.parseDouble(command.get(currentIndex + 1));
+            currentIndex += 2;
+        }
+
+        if (!"STREAMS".equalsIgnoreCase(command.get(currentIndex))) {
             writeError("ERR Syntax error in XREAD command", out);
             return;
         }
 
-        List<String> streams = new ArrayList<>();
-        List<String> ids = new ArrayList<>();
+        currentIndex++;
 
-        int i = 2;
-        while(i < command.size() && !command.get(i).contains("-")) streams.add(command.get(i++));
-        while(i < command.size()) ids.add(command.get(i++));
+        List<String> streamKeys = new ArrayList<>();
+        List<String> startIds = new ArrayList<>();
 
-        if (streams.size() != ids.size()) {
+        while (currentIndex < command.size() && !command.get(currentIndex).contains("-"))
+            streamKeys.add(command.get(currentIndex++));
+        while (currentIndex < command.size()) startIds.add(command.get(currentIndex++));
+
+        if (streamKeys.size() != startIds.size()) {
             writeError("ERR Unbalanced XREAD streams and IDs count", out);
             return;
         }
 
-        int totalStreamKeys = streams.size();
-        writeArray(totalStreamKeys, out);
+        List<StreamReadResult> readResults = new ArrayList<>();
+        boolean hasData = false;
 
-        for (i = 0; i < streams.size(); i++) {
-            String streamKey = streams.get(i);
-            String startId = ids.get(i);
+        for (int i = 0; i < streamKeys.size(); i++) {
+            String streamKey = streamKeys.get(i);
+            String startId = startIds.get(i);
 
             RedisStream stream = dataStore.getStream(streamKey);
             if (stream == null) {
@@ -348,27 +363,17 @@ public class CommandHandlers {
             }
 
             List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
-            writeXReadResponse(streamKey, entries, out);
-        }
-    }
-
-    private void writeXReadResponse(String streamKey, List<StreamEntry> entries, OutputStream out) throws IOException {
-        writeArray(entries.size()+1, out); // [streamKey, array of entries]
-        writeBulkString(streamKey, out);
-        writeArray(entries.size(), out); // no of entries in an array
-
-        for(StreamEntry entry: entries) {
-            writeArray(2, out); // id, list of pairs
-            writeBulkString(entry.getId(), out);
-
-            Map<String, String> fields = entry.getFields();
-            writeArray(2*fields.size(), out); // key-value
-
-            for(Map.Entry<String, String> it: fields.entrySet()){
-                writeBulkString(it.getKey(), out);
-                writeBulkString(it.getValue(), out);
+            if (!entries.isEmpty()) {
+                readResults.add(new StreamReadResult(streamKey, entries));
+                hasData = true;
             }
         }
-    }
 
+        if (hasData || blockTimeout == -1) {
+            RespProtocol.writeXReadResults(readResults, out);
+            return;
+        }
+
+        blockingManager.addBlockedStreamClient(streamKeys, startIds, blockTimeout, out);
+    }
 }
