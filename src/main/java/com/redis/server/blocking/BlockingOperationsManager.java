@@ -40,6 +40,8 @@ public class BlockingOperationsManager {
                     if (list != null && !list.isEmpty()) {
                         String poppedElement = list.remove(0);
 
+                        System.out.println("[notify] key: " + key + " ======= " + "popped: " + poppedElement);
+
                         RespProtocol.writeArray(2, client.getOutputStream());
                         RespProtocol.writeBulkString(key, client.getOutputStream());
                         RespProtocol.writeBulkString(poppedElement, client.getOutputStream());

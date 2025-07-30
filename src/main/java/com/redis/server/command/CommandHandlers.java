@@ -214,6 +214,7 @@ public class CommandHandlers {
         // If the list is not empty, pop the element
         if (list != null && !list.isEmpty()) {
             String poppedElement = list.remove(0);
+            System.out.println("[blpop] key: " + key + " ======= " + "popped: " + poppedElement);
 
             // return array - [key, value]
             writeArray(2, out);
