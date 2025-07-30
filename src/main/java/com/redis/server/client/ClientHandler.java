@@ -22,6 +22,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("client sent: " + System.currentTimeMillis());
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
