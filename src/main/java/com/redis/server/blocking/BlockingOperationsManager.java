@@ -64,30 +64,6 @@ public class BlockingOperationsManager {
         }
     }
 
-    public void checkTimedOutClients() throws IOException {
-        synchronized (blockedClients) {
-            Iterator<BlockedClient> it = blockedClients.iterator();
-            while (it.hasNext()) {
-                BlockedClient client = it.next();
-                if (client.isTimedOut()) {
-                    RespProtocol.writeNullBulkString(client.getOutputStream());
-                    it.remove();
-                }
-            }
-        }
-
-        synchronized (blockedStreamClients) {
-            Iterator<BlockedStreamClient> it = blockedStreamClients.iterator();
-            while (it.hasNext()) {
-                BlockedStreamClient client = it.next();
-                if (client.isTimedOut()) {
-                    RespProtocol.writeNullBulkString(client.getOutputStream());
-                    it.remove();
-                }
-            }
-        }
-    }
-
     public void notifyBlockedStreamClients(String streamKey) throws IOException {
         synchronized (blockedStreamClients) {
             Iterator<BlockedStreamClient> it = blockedStreamClients.iterator();
@@ -115,9 +91,32 @@ public class BlockingOperationsManager {
 
                     if (hasData) {
                         RespProtocol.writeXReadResults(readResults, client.getOutputStream());
-                        it.remove();
                         return;
                     }
+                }
+            }
+        }
+    }
+
+    public void checkTimedOutClients() throws IOException {
+        synchronized (blockedClients) {
+            Iterator<BlockedClient> it = blockedClients.iterator();
+            while (it.hasNext()) {
+                BlockedClient client = it.next();
+                if (client.isTimedOut()) {
+                    RespProtocol.writeNullBulkString(client.getOutputStream());
+                    it.remove();
+                }
+            }
+        }
+
+        synchronized (blockedStreamClients) {
+            Iterator<BlockedStreamClient> it = blockedStreamClients.iterator();
+            while (it.hasNext()) {
+                BlockedStreamClient client = it.next();
+                if (client.isTimedOut()) {
+                    RespProtocol.writeNullBulkString(client.getOutputStream());
+                    it.remove();
                 }
             }
         }
