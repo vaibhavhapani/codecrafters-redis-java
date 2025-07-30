@@ -94,6 +94,7 @@ public class BlockingOperationsManager {
                     if (hasData) {
                         System.out.println("Has new Data: " + readResults.size());
                         RespProtocol.writeXReadResults(readResults, client.getOutputStream());
+                        it.remove();
                         return;
                     }
                 }
@@ -118,6 +119,7 @@ public class BlockingOperationsManager {
             while (it.hasNext()) {
                 BlockedStreamClient client = it.next();
                 if (client.isTimedOut()) {
+                    System.out.println("xread time out should print null bulk string");
                     RespProtocol.writeNullBulkString(client.getOutputStream());
                     it.remove();
                 }
