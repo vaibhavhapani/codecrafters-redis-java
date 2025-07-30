@@ -6,6 +6,7 @@ import com.redis.server.protocol.RespProtocol;
 import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,7 @@ public class BlockingOperationsManager {
         );
     }
 
-    public void addBlockedClient(String key, double timeoutSeconds, java.io.OutputStream out) {
+    public void addBlockedClient(String key, double timeoutSeconds, OutputStream out) {
         blockedClients.offer(new BlockedClient(key, timeoutSeconds, out));
     }
 
