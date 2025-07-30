@@ -10,12 +10,12 @@ public class BlockedStreamClient {
     private final long blockTime;
     private final long timeoutTime;
 
-    public BlockedStreamClient(List<String> streamKeys, List<String> startIds, double timeoutSeconds, OutputStream out) {
+    public BlockedStreamClient(List<String> streamKeys, List<String> startIds, double timeoutMillis, OutputStream out) {
         this.streamKeys = streamKeys;
         this.startIds = startIds;
         this.out = out;
         this.blockTime = System.currentTimeMillis();
-        this.timeoutTime = timeoutSeconds == 0 ? 0 : blockTime + (long) (timeoutSeconds * 1000);
+        this.timeoutTime = timeoutMillis == 0 ? 0 : blockTime + (long) (timeoutMillis);
     }
 
     public boolean isTimedOut() {
