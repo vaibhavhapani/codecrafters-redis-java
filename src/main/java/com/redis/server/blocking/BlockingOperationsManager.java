@@ -65,6 +65,8 @@ public class BlockingOperationsManager {
     }
 
     public void notifyBlockedStreamClients(String streamKey) throws IOException {
+        System.out.println("Notified blocked stream client");
+
         synchronized (blockedStreamClients) {
             Iterator<BlockedStreamClient> it = blockedStreamClients.iterator();
 
@@ -90,6 +92,7 @@ public class BlockingOperationsManager {
                     }
 
                     if (hasData) {
+                        System.out.println("Has new Data: " + readResults);
                         RespProtocol.writeXReadResults(readResults, client.getOutputStream());
                         return;
                     }
