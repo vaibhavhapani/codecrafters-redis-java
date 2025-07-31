@@ -392,9 +392,13 @@ public class CommandHandlers {
         String key = command.get(1);
         String value = dataStore.getValue(key);
 
-        int incrValue = Integer.parseInt(value)+1;
-        dataStore.setValue(key, String.valueOf(incrValue));
-
-        writeInteger(incrValue, out);
+        if(value != null) {
+            int incrValue = Integer.parseInt(value)+1;
+            dataStore.setValue(key, String.valueOf(incrValue));
+            writeInteger(incrValue, out);
+        } else {
+            dataStore.setValue(key, "1");
+            writeInteger(1, out);
+        }
     }
 }
