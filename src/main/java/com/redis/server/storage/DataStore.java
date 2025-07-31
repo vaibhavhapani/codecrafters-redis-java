@@ -103,7 +103,11 @@ public class DataStore {
         multi = false;
     }
 
-    public boolean isQueuedCommandsEmpty(){
+    public boolean hasQueuedCommand(){
         return queuedCommands.isEmpty();
+    }
+
+    public QueuedCommand pollQueuedCommand(){
+        return queuedCommands.poll();
     }
 }

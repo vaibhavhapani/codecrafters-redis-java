@@ -2,6 +2,7 @@ package com.redis.server.command;
 
 import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
+import com.redis.server.model.QueuedCommand;
 import com.redis.server.model.RedisStream;
 import com.redis.server.model.StreamEntry;
 import com.redis.server.model.StreamReadResult;
@@ -439,6 +440,19 @@ public class CommandHandlers {
         }
 
         dataStore.disableMulti();
-        if(dataStore.isQueuedCommandsEmpty()) writeArray(0, out);
+
+        if(dataStore.hasQueuedCommand()) {
+            writeArray(0, out);
+            return;
+        }
+
+        while (dataStore.hasQueuedCommand()){
+            QueuedCommand queuedCommand = dataStore.pollQueuedCommand();
+            List<String> commandArray = queuedCommand.getCommand();
+            OutputStream commandOutPutStream = queuedCommand.getOutputStream();
+
+            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(commandArray, commandOutPutStream);
+            if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(commandArray, commandOutPutStream);
+        }
     }
 }
