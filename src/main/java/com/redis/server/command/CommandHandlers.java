@@ -58,6 +58,12 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isMultiEnabled()) {
+            dataStore.putCommandInQueue(command, out);
+            writeSimpleString("QUEUED", out);
+            return;
+        }
+
         String key = command.get(1);
         String value = command.get(2);
 
@@ -386,6 +392,12 @@ public class CommandHandlers {
     public void handleIncr(List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INCR' command", out);
+            return;
+        }
+
+        if(dataStore.isMultiEnabled()) {
+            dataStore.putCommandInQueue(command, out);
+            writeSimpleString("QUEUED", out);
             return;
         }
 

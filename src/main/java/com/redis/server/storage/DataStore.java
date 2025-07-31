@@ -87,7 +87,7 @@ public class DataStore {
         return "none";
     }
 
-    public void addCommand(List<String> command, OutputStream out) {
+    public void putCommandInQueue(List<String> command, OutputStream out) {
         queuedCommands.add(new QueuedCommand(command, out));
     }
 
