@@ -29,6 +29,7 @@ public class RedisConstants {
     public static final String XADD = "XADD";
     public static final String XRANGE = "XRANGE";
     public static final String XREAD = "XREAD";
+    public static final String INCR = "INCR";
 
     // Response messages
     public static final String PONG = "PONG";

@@ -382,4 +382,19 @@ public class CommandHandlers {
 
         blockingManager.addBlockedStreamClient(streamKeys, startIds, blockTimeout, out);
     }
+
+    public void handleIncr(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INCR' command", out);
+            return;
+        }
+
+        String key = command.get(1);
+        String value = dataStore.getValue(key);
+
+        String incrValue = String.valueOf(Integer.parseInt(value)+1);
+        dataStore.setValue(key, incrValue);
+
+        writeBulkString(incrValue, out);
+    }
 }
