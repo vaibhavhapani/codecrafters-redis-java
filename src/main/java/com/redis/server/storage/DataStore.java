@@ -102,4 +102,8 @@ public class DataStore {
     public void disableMulti() {
         multi = false;
     }
+
+    public boolean isQueuedCommandsEmpty(){
+        return queuedCommands.isEmpty();
+    }
 }

@@ -421,7 +421,9 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isMultiEnabled()) dataStore.disableMulti();
-        else writeError("ERR EXEC without MULTI", out);
+        if(!dataStore.isMultiEnabled()) writeError("ERR EXEC without MULTI", out);
+
+        dataStore.disableMulti();
+        if(dataStore.isQueuedCommandsEmpty()) writeArray(0, out);
     }
 }
