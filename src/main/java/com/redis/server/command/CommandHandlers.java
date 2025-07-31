@@ -362,7 +362,11 @@ public class CommandHandlers {
                 continue;
             }
 
-            if("$".equals(startId)) startId = stream.getLastEntry().getId();
+            if("$".equals(startId)) {
+                if(stream != null && !stream.isEmpty()) startId = stream.getLastEntry().getId();
+                else startId = "0-0";
+                startIds.set(i, startId);
+            }
 
             List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
             if (!entries.isEmpty()) {
