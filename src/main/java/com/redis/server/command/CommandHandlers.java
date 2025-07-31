@@ -393,9 +393,13 @@ public class CommandHandlers {
         String value = dataStore.getValue(key);
 
         if(value != null) {
-            int incrValue = Integer.parseInt(value)+1;
-            dataStore.setValue(key, String.valueOf(incrValue));
-            writeInteger(incrValue, out);
+            try{
+                int incrValue = Integer.parseInt(value) + 1;
+                dataStore.setValue(key, String.valueOf(incrValue));
+                writeInteger(incrValue, out);
+            } catch (NumberFormatException e) {
+                writeError("ERR value is not an integer or out of range", out);
+            }
         } else {
             dataStore.setValue(key, "1");
             writeInteger(1, out);
