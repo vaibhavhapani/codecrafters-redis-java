@@ -85,9 +85,17 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isMultiEnabled()) {
+            dataStore.putCommandInQueue(command, out);
+            System.out.println("hello");
+            writeSimpleString("QUEUED", out);
+            return;
+        }
+
         String key = command.get(1);
         String value = dataStore.getValue(key);
         writeBulkString(value, out);
+        System.out.println("world");
     }
 
     public void handleLPush(List<String> command, OutputStream out) throws IOException {
