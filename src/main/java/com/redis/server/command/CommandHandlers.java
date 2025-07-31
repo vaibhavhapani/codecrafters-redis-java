@@ -340,7 +340,7 @@ public class CommandHandlers {
         List<String> streamKeys = new ArrayList<>();
         List<String> startIds = new ArrayList<>();
 
-        while (currentIndex < command.size() && !command.get(currentIndex).contains("-") || !"$".equals(command.get(currentIndex)))
+        while (currentIndex < command.size() && !command.get(currentIndex).contains("-") && !"$".equals(command.get(currentIndex)))
             streamKeys.add(command.get(currentIndex++));
         while (currentIndex < command.size()) startIds.add(command.get(currentIndex++));
 
