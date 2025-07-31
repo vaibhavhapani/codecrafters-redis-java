@@ -65,8 +65,6 @@ public class BlockingOperationsManager {
     }
 
     public void notifyBlockedStreamClients(String streamKey) throws IOException {
-        System.out.println("Notified blocked stream client");
-
         synchronized (blockedStreamClients) {
             Iterator<BlockedStreamClient> it = blockedStreamClients.iterator();
 
@@ -118,7 +116,6 @@ public class BlockingOperationsManager {
             while (it.hasNext()) {
                 BlockedStreamClient client = it.next();
                 if (client.isTimedOut()) {
-                    System.out.println("xread time out should print null bulk string");
                     RespProtocol.writeNullBulkString(client.getOutputStream());
                     it.remove();
                 }

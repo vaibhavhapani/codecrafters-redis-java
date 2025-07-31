@@ -340,7 +340,7 @@ public class CommandHandlers {
         List<String> streamKeys = new ArrayList<>();
         List<String> startIds = new ArrayList<>();
 
-        while (currentIndex < command.size() && !command.get(currentIndex).contains("-"))
+        while (currentIndex < command.size() && !command.get(currentIndex).contains("-") || !"$".equals(command.get(currentIndex)))
             streamKeys.add(command.get(currentIndex++));
         while (currentIndex < command.size()) startIds.add(command.get(currentIndex++));
 
@@ -361,6 +361,8 @@ public class CommandHandlers {
                 writeArray(0, out);
                 continue;
             }
+
+            if("$".equals(startId)) startId = stream.getLastEntry().getId();
 
             List<StreamEntry> entries = stream.getEntriesInRange(startId, "+", true);
             if (!entries.isEmpty()) {
