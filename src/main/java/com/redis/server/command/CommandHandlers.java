@@ -447,7 +447,7 @@ public class CommandHandlers {
 
         dataStore.disableMulti();
 
-        if(dataStore.hasQueuedCommand()) {
+        if(!dataStore.hasQueuedCommand()) {
             writeArray(0, out);
             return;
         }

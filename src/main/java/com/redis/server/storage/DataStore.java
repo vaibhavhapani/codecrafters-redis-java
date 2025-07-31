@@ -104,7 +104,7 @@ public class DataStore {
     }
 
     public boolean hasQueuedCommand(){
-        return queuedCommands.isEmpty();
+        return !queuedCommands.isEmpty();
     }
 
     public QueuedCommand pollQueuedCommand(){
