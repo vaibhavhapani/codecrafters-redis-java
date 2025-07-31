@@ -10,7 +10,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataStore {
-    private static boolean multi = false;
+    private boolean multi = false;
 
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();

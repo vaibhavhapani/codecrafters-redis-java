@@ -87,6 +87,7 @@ public class CommandHandlers {
 
         if(dataStore.isMultiEnabled()) {
             dataStore.putCommandInQueue(command, out);
+            System.out.println("hello");
             writeSimpleString("QUEUED", out);
             return;
         }
@@ -94,6 +95,7 @@ public class CommandHandlers {
         String key = command.get(1);
         String value = dataStore.getValue(key);
         writeBulkString(value, out);
+        System.out.println("world");
     }
 
     public void handleLPush(List<String> command, OutputStream out) throws IOException {
@@ -459,7 +461,10 @@ public class CommandHandlers {
             OutputStream commandOutPutStream = queuedCommand.getOutputStream();
 
             if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(commandArray, commandOutPutStream);
-            if(RedisConstants.GET.equals(commandArray.get(0))) handleGet(commandArray, commandOutPutStream);
+            if(RedisConstants.GET.equals(commandArray.get(0))) {
+                System.out.println("exec  get");
+                handleGet(commandArray, commandOutPutStream);
+            }
             if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(commandArray, commandOutPutStream);
         }
     }
