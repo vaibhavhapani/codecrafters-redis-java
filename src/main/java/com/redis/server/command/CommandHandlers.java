@@ -452,6 +452,8 @@ public class CommandHandlers {
             return;
         }
 
+        writeArray(dataStore.getQueuedCommandSize(), out);
+
         while (dataStore.hasQueuedCommand()){
             QueuedCommand queuedCommand = dataStore.pollQueuedCommand();
             List<String> commandArray = queuedCommand.getCommand();

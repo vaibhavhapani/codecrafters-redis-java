@@ -110,4 +110,8 @@ public class DataStore {
     public QueuedCommand pollQueuedCommand(){
         return queuedCommands.poll();
     }
+
+    public int getQueuedCommandSize(){
+        return queuedCommands.size();
+    }
 }
