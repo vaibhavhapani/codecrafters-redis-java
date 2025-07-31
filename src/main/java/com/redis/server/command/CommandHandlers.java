@@ -411,6 +411,17 @@ public class CommandHandlers {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'MULTI' command", out);
             return;
         }
+        dataStore.enableMulti();
         writeSimpleString("OK", out);
+    }
+
+    public void handleExec(List<String> command, OutputStream out) throws IOException {
+        if (command.isEmpty()) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'EXEC' command", out);
+            return;
+        }
+
+        if(dataStore.isMultiEnabled()) dataStore.disableMulti();
+        else writeError("ERR EXEC without MULTI", out);
     }
 }

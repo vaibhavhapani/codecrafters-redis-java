@@ -1,16 +1,22 @@
 package com.redis.server.storage;
 
+import com.redis.server.model.QueuedCommand;
 import com.redis.server.model.RedisStream;
 
+import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataStore {
+    private static boolean multi = false;
+
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RedisStream> streams = new ConcurrentHashMap<>();
+    private final Queue<QueuedCommand> queuedCommands = new LinkedList<>();
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -79,5 +85,21 @@ public class DataStore {
             return "stream";
         }
         return "none";
+    }
+
+    public void addCommand(List<String> command, OutputStream out) {
+        queuedCommands.add(new QueuedCommand(command, out));
+    }
+
+    public boolean isMultiEnabled() {
+        return multi;
+    }
+
+    public void enableMulti() {
+        multi = true;
+    }
+
+    public void disableMulti() {
+        multi = false;
     }
 }

@@ -69,6 +69,9 @@ public class CommandProcessor {
             case RedisConstants.MULTI:
                 handlers.handleMulti(command, out);
                 break;
+            case RedisConstants.EXEC:
+                handlers.handleExec(command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;
