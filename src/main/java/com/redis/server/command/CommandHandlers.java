@@ -405,4 +405,12 @@ public class CommandHandlers {
             writeInteger(1, out);
         }
     }
+
+    public void handleMulti(List<String> command, OutputStream out) throws IOException {
+        if (command.isEmpty()) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'MULTI' command", out);
+            return;
+        }
+        writeSimpleString("OK", out);
+    }
 }
