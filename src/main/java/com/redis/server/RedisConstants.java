@@ -1,6 +1,7 @@
 package com.redis.server;
 
 public class RedisConstants {
+    public static final String PORT_ARG = "--port";
     public static final int DEFAULT_PORT = 6379;
     public static final long TIMEOUT_CHECK_INTERVAL = 50; // ms
     public static final int BLOCKED_CLIENTS_INITIAL_CAPACITY = 5;
