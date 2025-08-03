@@ -12,15 +12,21 @@ import java.net.SocketException;
 
 public class RedisServer {
     private final int port;
+    private final boolean isReplica;
+    private final String masterHost;
+    private final int masterPort;
     private final DataStore dataStore;
     private final BlockingOperationsManager blockingManager;
     private final CommandProcessor commandProcessor;
 
-    public RedisServer(int port) {
+    public RedisServer(int port, String masterHost, int masterPort, boolean isReplica) {
         this.port = port;
+        this.masterHost = masterHost;
+        this.masterPort = masterPort;
+        this.isReplica = isReplica;
         this.dataStore = new DataStore();
         this.blockingManager = new BlockingOperationsManager(dataStore);
-        this.commandProcessor = new CommandProcessor(dataStore, blockingManager);
+        this.commandProcessor = new CommandProcessor(isReplica, masterHost, masterPort, dataStore, blockingManager);
     }
 
     public void start() {
@@ -29,6 +35,12 @@ public class RedisServer {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
             System.out.println("Redis server started on port " + port);
+
+            if (isReplica) {
+                System.out.println("Running as replica of " + masterHost + ":" + masterPort);
+            } else {
+                System.out.println("Running as master");
+            }
 
             while (true) {
                 try {

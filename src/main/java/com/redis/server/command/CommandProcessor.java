@@ -13,10 +13,16 @@ public class CommandProcessor {
 
     private final CommandHandlers handlers;
     private final DataStore dataStore;
+    private final boolean isReplica;
+    private final String masterHost;
+    private final int masterPort;
 
-    public CommandProcessor(DataStore dataStore, BlockingOperationsManager blockingManager) {
-        this.handlers = new CommandHandlers(dataStore, blockingManager);
+    public CommandProcessor(Boolean isReplica, String masterHost, int masterPort, DataStore dataStore, BlockingOperationsManager blockingManager) {
+        this.isReplica = isReplica;
+        this.masterHost = masterHost;
+        this.masterPort = masterPort;
         this.dataStore = dataStore;
+        this.handlers = new CommandHandlers(dataStore, blockingManager);
     }
 
     public void processCommand(String clientId, List<String> command, OutputStream out) throws IOException {
@@ -78,7 +84,7 @@ public class CommandProcessor {
                 handlers.handleDiscard(clientId, command, out);
                 break;
             case RedisConstants.INFO:
-                handlers.handleInfo(clientId, command, out);
+                handlers.handleInfo(clientId, command, out, isReplica, masterHost, masterPort);
                 break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
