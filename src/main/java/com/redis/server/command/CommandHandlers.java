@@ -476,5 +476,6 @@ public class CommandHandlers {
         }
 
         dataStore.discardQueuedCommands(clientId);
+        writeSimpleString("OK", out);
     }
 }
