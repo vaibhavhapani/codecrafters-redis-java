@@ -87,7 +87,6 @@ public class CommandHandlers {
 
         if(dataStore.isMultiEnabled()) {
             dataStore.putCommandInQueue(command, out);
-            System.out.println("hiii");
             writeSimpleString("QUEUED", out);
             return;
         }
