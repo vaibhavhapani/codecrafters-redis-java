@@ -463,4 +463,18 @@ public class CommandHandlers {
             if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(clientId, commandArray, commandOutPutStream);
         }
     }
+
+    public void handleDiscard(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.isEmpty()) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'DISCARD' command", out);
+            return;
+        }
+
+        if(!dataStore.hasQueuedCommand(clientId)) {
+            writeError("ERR DISCARD without MULTI", out);
+            return;
+        }
+
+        dataStore.discardQueuedCommands(clientId);
+    }
 }

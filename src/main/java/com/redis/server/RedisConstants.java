@@ -32,6 +32,7 @@ public class RedisConstants {
     public static final String INCR = "INCR";
     public static final String MULTI = "MULTI";
     public static final String EXEC = "EXEC";
+    public static final String DISCARD = "DISCARD";
 
     // Response messages
     public static final String PONG = "PONG";

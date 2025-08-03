@@ -120,6 +120,11 @@ public class DataStore {
         return queue != null ? queue.size() : 0;
     }
 
+    public void discardQueuedCommands(String clientId) {
+        clientQueuedCommands.remove(clientId);
+        disableMulti(clientId);
+    }
+
     // To remove client data when client disconnects
     public void cleanupClient(String clientId) {
         clientMultiStates.remove(clientId);
