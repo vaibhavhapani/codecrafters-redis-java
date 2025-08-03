@@ -10,16 +10,21 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final CommandProcessor commandProcessor;
+    private final String clientId;
 
     public ClientHandler(Socket clientSocket, CommandProcessor commandProcessor) {
         this.clientSocket = clientSocket;
         this.commandProcessor = commandProcessor;
+        clientId = generateClientId();
     }
-
+    private String generateClientId() {
+        return UUID.randomUUID().toString(); // Or alternatively: return clientSocket.getRemoteSocketAddress().toString() + "-" + System.currentTimeMillis();
+    }
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -30,7 +35,7 @@ public class ClientHandler implements Runnable {
                 if (line.startsWith(RedisConstants.ARRAY_PREFIX)) {
                     List<String> command = parseRespArray(line, in);
                     if (!command.isEmpty()) {
-                        commandProcessor.processCommand(command, out);
+                        commandProcessor.processCommand(clientId, command, out);
                         out.flush();
                     }
                 }
@@ -38,6 +43,7 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         } finally {
+            commandProcessor.cleanupClient(clientId);
             try {
                 clientSocket.close();
             } catch (IOException e) {

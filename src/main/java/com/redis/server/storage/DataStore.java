@@ -4,19 +4,20 @@ import com.redis.server.model.QueuedCommand;
 import com.redis.server.model.RedisStream;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataStore {
-    private boolean multi = false;
-
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> expiry = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, List<String>> lists = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RedisStream> streams = new ConcurrentHashMap<>();
-    private final Queue<QueuedCommand> queuedCommands = new LinkedList<>();
+    private final ConcurrentHashMap<String, Boolean> clientMultiStates = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Queue<QueuedCommand>> clientQueuedCommands = new ConcurrentHashMap<>();
+
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -87,31 +88,41 @@ public class DataStore {
         return "none";
     }
 
-    public void putCommandInQueue(List<String> command, OutputStream out) {
-        queuedCommands.add(new QueuedCommand(command, out));
+    public void putCommandInQueue(String clientId, List<String> command, OutputStream out) {
+        clientQueuedCommands.computeIfAbsent(clientId, k -> new LinkedList<>()).offer(new QueuedCommand(command, out));
     }
 
-    public boolean isMultiEnabled() {
-        return multi;
+    public boolean isMultiEnabled(String clientID) {
+        return clientMultiStates.getOrDefault(clientID, false);
     }
 
-    public void enableMulti() {
-        multi = true;
+    public void enableMulti(String clientId) {
+        clientMultiStates.put(clientId, true);
+        clientQueuedCommands.computeIfAbsent(clientId, k -> new LinkedList<>());
     }
 
-    public void disableMulti() {
-        multi = false;
+    public void disableMulti(String clientId) {
+        clientMultiStates.put(clientId, false);
     }
 
-    public boolean hasQueuedCommand(){
-        return !queuedCommands.isEmpty();
+    public boolean hasQueuedCommand(String clientId){
+        Queue<QueuedCommand> queue = clientQueuedCommands.get(clientId);
+        return queue != null && !queue.isEmpty();
     }
 
-    public QueuedCommand pollQueuedCommand(){
-        return queuedCommands.poll();
+    public QueuedCommand pollQueuedCommand(String clientId){
+        Queue<QueuedCommand> queue = clientQueuedCommands.get(clientId);
+        return queue != null ? queue.poll() : null;
     }
 
-    public int getQueuedCommandSize(){
-        return queuedCommands.size();
+    public int getQueuedCommandSize(String clientId){
+        Queue<QueuedCommand> queue = clientQueuedCommands.get(clientId);
+        return queue != null ? queue.size() : 0;
+    }
+
+    // To remove client data when client disconnects
+    public void cleanupClient(String clientId) {
+        clientMultiStates.remove(clientId);
+        clientQueuedCommands.remove(clientId);
     }
 }

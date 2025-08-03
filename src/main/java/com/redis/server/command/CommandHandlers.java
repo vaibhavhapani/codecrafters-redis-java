@@ -53,14 +53,14 @@ public class CommandHandlers {
         writeSimpleString(keyType, out);
     }
 
-    public void handleSet(List<String> command, OutputStream out) throws IOException {
+    public void handleSet(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'SET' command", out);
             return;
         }
 
-        if(dataStore.isMultiEnabled()) {
-            dataStore.putCommandInQueue(command, out);
+        if(dataStore.isMultiEnabled(clientId)) {
+            dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             return;
         }
@@ -79,14 +79,14 @@ public class CommandHandlers {
         writeSimpleString(RedisConstants.OK, out);
     }
 
-    public void handleGet(List<String> command, OutputStream out) throws IOException {
+    public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'GET' command", out);
             return;
         }
 
-        if(dataStore.isMultiEnabled()) {
-            dataStore.putCommandInQueue(command, out);
+        if(dataStore.isMultiEnabled(clientId)) {
+            dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             return;
         }
@@ -396,14 +396,14 @@ public class CommandHandlers {
         blockingManager.addBlockedStreamClient(streamKeys, startIds, blockTimeout, out);
     }
 
-    public void handleIncr(List<String> command, OutputStream out) throws IOException {
+    public void handleIncr(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INCR' command", out);
             return;
         }
 
-        if(dataStore.isMultiEnabled()) {
-            dataStore.putCommandInQueue(command, out);
+        if(dataStore.isMultiEnabled(clientId)) {
+            dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             return;
         }
@@ -425,42 +425,42 @@ public class CommandHandlers {
         }
     }
 
-    public void handleMulti(List<String> command, OutputStream out) throws IOException {
+    public void handleMulti(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'MULTI' command", out);
             return;
         }
-        dataStore.enableMulti();
+        dataStore.enableMulti(clientId);
         writeSimpleString("OK", out);
     }
 
-    public void handleExec(List<String> command, OutputStream out) throws IOException {
+    public void handleExec(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'EXEC' command", out);
             return;
         }
 
-        if(!dataStore.isMultiEnabled()) {
+        if(!dataStore.isMultiEnabled(clientId)) {
             writeError("ERR EXEC without MULTI", out);
             return;
         }
 
-        dataStore.disableMulti();
+        dataStore.disableMulti(clientId);
 
-        if(!dataStore.hasQueuedCommand()) {
+        if(!dataStore.hasQueuedCommand(clientId)) {
             writeArray(0, out);
             return;
         }
 
-        writeArray(dataStore.getQueuedCommandSize(), out);
-        while (dataStore.hasQueuedCommand()){
-            QueuedCommand queuedCommand = dataStore.pollQueuedCommand();
+        writeArray(dataStore.getQueuedCommandSize(clientId), out);
+        while (dataStore.hasQueuedCommand(clientId)){
+            QueuedCommand queuedCommand = dataStore.pollQueuedCommand(clientId);
             List<String> commandArray = queuedCommand.getCommand();
             OutputStream commandOutPutStream = queuedCommand.getOutputStream();
 
-            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(commandArray, commandOutPutStream);
-            if(RedisConstants.GET.equals(commandArray.get(0))) handleGet(commandArray, commandOutPutStream);
-            if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(commandArray, commandOutPutStream);
+            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(clientId, commandArray, commandOutPutStream);
+            if(RedisConstants.GET.equals(commandArray.get(0))) handleGet(clientId, commandArray, commandOutPutStream);
+            if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(clientId, commandArray, commandOutPutStream);
         }
     }
 }
