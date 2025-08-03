@@ -479,7 +479,7 @@ public class CommandHandlers {
         writeSimpleString("OK", out);
     }
 
-    public void handleInfo(String clientId, List<String> command, OutputStream out, Boolean isReplica, String masterHost, String masterPort) throws IOException {
+    public void handleInfo(String clientId, List<String> command, OutputStream out, Boolean isReplica, String masterHost, int masterPort) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INFO' command", out);
             return;
