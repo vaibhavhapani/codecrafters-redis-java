@@ -21,8 +21,8 @@ public class Main {
                         String[] masterInfo = args[i + 1].split(" ");
 
                         if (masterInfo.length == 2) {
-                            masterHost = masterInfo[i + 1];
-                            masterPort = Integer.parseInt(masterInfo[i + 2]);
+                            masterHost = masterInfo[0];
+                            masterPort = Integer.parseInt(masterInfo[1]);
                             isReplica = true;
                         }
                         i++;
