@@ -487,9 +487,7 @@ public class CommandHandlers {
 
         if(isReplica) writeBulkString("role:slave", out);
         else {
-            // writeBulkString("role:master", out);
-            writeBulkString("master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb", out);
-            writeBulkString("master_repl_offset:0", out);
+            writeBulkString("role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb", out);
         }
     }
 }
