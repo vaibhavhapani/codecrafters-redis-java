@@ -9,13 +9,15 @@ import java.net.Socket;
 public class ReplicaConnectionManager {
     private final String masterHost;
     private final int masterPort;
+    private final int replicaPort;
     private Socket masterSocket;
     private OutputStream masterOutput;
     private BufferedReader masterInput;
 
-    public ReplicaConnectionManager(String masterHost, int masterPort){
+    public ReplicaConnectionManager(String masterHost, int masterPort, int replicaPort){
         this.masterHost = masterHost;
         this.masterPort = masterPort;
+        this.replicaPort = replicaPort;
     }
 
     public void connectToMaster() throws IOException {
@@ -41,6 +43,12 @@ public class ReplicaConnectionManager {
     private void performHandshake() throws IOException {
         // Step 1: Send PING to master
         sendPingToMaster();
+
+        // Step 2: Send REPLCONF listening-port
+        sendReplconfListeningPort();
+
+        // Step 3: Send REPLCONF capa psync2
+        sendReplconfCapabilities();
     }
 
     private void sendPingToMaster() throws IOException {
@@ -52,4 +60,29 @@ public class ReplicaConnectionManager {
 
         System.out.println("PING sent to master");
     }
+
+    private void sendReplconfListeningPort() throws IOException {
+        System.out.println("Sending REPLCONF listening-port " + replicaPort);
+
+        String portStr = String.valueOf(replicaPort);
+        String command = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" + portStr.length() + "\r\n" + portStr + "\r\n";
+
+        masterOutput.write(command.getBytes());
+        masterOutput.flush();
+
+        System.out.println("REPLCONF listening-port sent: " + command.replace("\r\n", "\\r\\n"));
+    }
+
+    private void sendReplconfCapabilities() throws IOException {
+        System.out.println("Sending REPLCONF capa psync2");
+
+        String command = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
+
+        masterOutput.write(command.getBytes());
+        masterOutput.flush();
+
+        System.out.println("REPLCONF capa sent: " + command.replace("\r\n", "\\r\\n"));
+
+    }
+
 }

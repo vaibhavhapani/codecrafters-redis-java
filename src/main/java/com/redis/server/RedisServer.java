@@ -29,7 +29,7 @@ public class RedisServer {
         this.blockingManager = new BlockingOperationsManager(dataStore);
         this.commandProcessor = new CommandProcessor(isReplica, masterHost, masterPort, dataStore, blockingManager);
 
-        if(isReplica) replicaManager = new ReplicaConnectionManager(masterHost, masterPort);
+        if(isReplica) replicaManager = new ReplicaConnectionManager(masterHost, masterPort, port);
     }
 
     public void start() {
