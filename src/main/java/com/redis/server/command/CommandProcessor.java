@@ -77,6 +77,9 @@ public class CommandProcessor {
             case RedisConstants.DISCARD:
                 handlers.handleDiscard(clientId, command, out);
                 break;
+            case RedisConstants.INFO:
+                handlers.handleInfo(clientId, command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

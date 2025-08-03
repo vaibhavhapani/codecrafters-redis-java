@@ -478,4 +478,13 @@ public class CommandHandlers {
         dataStore.discardQueuedCommands(clientId);
         writeSimpleString("OK", out);
     }
+
+    public void handleInfo(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.isEmpty()) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INFO' command", out);
+            return;
+        }
+
+        writeBulkString("role:master", out);
+    }
 }
