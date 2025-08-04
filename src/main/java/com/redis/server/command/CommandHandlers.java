@@ -510,10 +510,11 @@ public class CommandHandlers {
         if("?".equals(replId)) {
             writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);
 
-            byte[] rdbFile = Base64.getDecoder().decode("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");
+            byte[] rdbFileBytes = Base64.getDecoder().decode("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");
 
-            writeBulkString(String.valueOf(rdbFile.length), out);
-            out.write(rdbFile);
+            String header = "$" + rdbFileBytes.length + "\r\n";
+            out.write(header.getBytes());
+            out.write(rdbFileBytes);
         }
     }
 }
