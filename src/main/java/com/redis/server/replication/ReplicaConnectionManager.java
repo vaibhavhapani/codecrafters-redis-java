@@ -47,6 +47,9 @@ public class ReplicaConnectionManager {
         // Step 2: Send REPLCONF
         sendReplconfListeningPort();
         sendReplconfCapabilities();
+
+        // Step 3: Send PSYNC
+        sendPsync();
     }
 
     private void sendPingToMaster() throws IOException {
@@ -110,4 +113,17 @@ public class ReplicaConnectionManager {
         }
     }
 
+    private void sendPsync() throws IOException {
+        System.out.println("Sending PSYNC");
+
+        String command = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
+        masterOutput.write(command.getBytes());
+
+        System.out.println("PSYNC sent: " + command.replace("\r\n", "\\r\\n"));
+
+        String response = masterInput.readLine();
+        if (response != null) {
+            System.out.println("Received PSYNC response: " + response);
+        }
+    }
 }
