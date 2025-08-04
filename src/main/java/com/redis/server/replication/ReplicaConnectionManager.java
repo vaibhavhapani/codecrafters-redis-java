@@ -46,8 +46,6 @@ public class ReplicaConnectionManager {
 
         // Step 2: Send REPLCONF listening-port
         sendReplconfListeningPort();
-
-        // Step 3: Send REPLCONF capa psync2
         sendReplconfCapabilities();
     }
 
@@ -65,10 +63,8 @@ public class ReplicaConnectionManager {
         System.out.println("Sending REPLCONF listening-port " + replicaPort);
 
         String portStr = String.valueOf(replicaPort);
-        String command = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" + portStr.length() + "\r\n" + portStr + "\r\n";
-
+        String command = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" + portStr.length() + "\r\n" + replicaPort + "\r\n";
         masterOutput.write(command.getBytes());
-        masterOutput.flush();
 
         System.out.println("REPLCONF listening-port sent: " + command.replace("\r\n", "\\r\\n"));
     }
@@ -77,9 +73,7 @@ public class ReplicaConnectionManager {
         System.out.println("Sending REPLCONF capa psync2");
 
         String command = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
-
         masterOutput.write(command.getBytes());
-        masterOutput.flush();
 
         System.out.println("REPLCONF capa sent: " + command.replace("\r\n", "\\r\\n"));
 
