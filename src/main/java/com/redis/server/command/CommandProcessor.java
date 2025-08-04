@@ -89,6 +89,9 @@ public class CommandProcessor {
             case RedisConstants.REPLCONF:
                 handlers.handleReplconf(clientId, command, out);
                 break;
+            case RedisConstants.PSYNC:
+                handlers.handlePsync(clientId, command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

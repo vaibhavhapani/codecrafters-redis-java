@@ -500,4 +500,14 @@ public class CommandHandlers {
         System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
         writeSimpleString("OK", out);
     }
+
+    public void handlePsync(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'PSYNC' command", out);
+            return;
+        }
+
+        System.out.println("Handling PSYNC command: " + command.get(1) + " " + command.get(2));
+        writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);
+    }
 }

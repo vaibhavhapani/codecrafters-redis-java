@@ -38,6 +38,7 @@ public class RedisConstants {
     public static final String DISCARD = "DISCARD";
     public static final String INFO = "INFO";
     public static final String REPLCONF = "REPLCONF";
+    public static final String PSYNC = "PSYNC";
 
     // Response messages
     public static final String PONG = "PONG";
