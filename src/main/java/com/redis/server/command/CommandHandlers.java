@@ -11,10 +11,7 @@ import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.redis.server.protocol.RespProtocol.*;
 
@@ -507,7 +504,16 @@ public class CommandHandlers {
             return;
         }
 
-        System.out.println("Handling PSYNC command: " + command.get(1) + " " + command.get(2));
-        writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);
+        String replId = command.get(1);
+        String replOffset = command.get(2);
+
+        if("?".equals(replId)) {
+            writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);
+
+            byte[] rdbFile = Base64.getDecoder().decode("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");
+
+            writeBulkString(String.valueOf(rdbFile.length), out);
+            out.write(rdbFile);
+        }
     }
 }
