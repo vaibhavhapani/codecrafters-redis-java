@@ -45,8 +45,8 @@ public class ReplicaConnectionManager {
         sendPingToMaster();
 
         // Step 2: Send REPLCONF listening-port
-        sendReplconfListeningPort();
-        sendReplconfCapabilities();
+//        sendReplconfListeningPort();
+//        sendReplconfCapabilities();
     }
 
     private void sendPingToMaster() throws IOException {
