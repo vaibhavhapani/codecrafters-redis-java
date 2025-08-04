@@ -86,6 +86,9 @@ public class CommandProcessor {
             case RedisConstants.INFO:
                 handlers.handleInfo(clientId, command, out, isReplica, masterHost, masterPort);
                 break;
+            case RedisConstants.REPLCONF:
+                handlers.handleReplconf(clientId, command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

@@ -490,4 +490,14 @@ public class CommandHandlers {
             writeBulkString("role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb", out);
         }
     }
+
+    public void handleReplconf(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'REPLCONF' command", out);
+            return;
+        }
+
+        System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
+        writeSimpleString("OK", out);
+    }
 }
