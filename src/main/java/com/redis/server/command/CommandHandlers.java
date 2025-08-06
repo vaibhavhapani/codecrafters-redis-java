@@ -53,6 +53,8 @@ public class CommandHandlers {
             return;
         }
 
+        System.out.println("Set check 1: "+ serverConfig.isReplica());
+
         if(serverConfig.hasReplicas()) {
             List<OutputStream> slaves = serverConfig.getReplicaOutputStreams();
 
@@ -62,9 +64,12 @@ public class CommandHandlers {
             }
         }
 
+        System.out.println("Set check 2: "+ serverConfig.isReplica());
+
         if(dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
+            System.out.println("no");
             return;
         }
 
