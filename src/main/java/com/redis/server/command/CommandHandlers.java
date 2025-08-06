@@ -59,7 +59,9 @@ public class CommandHandlers {
             for(String s: command) writeSimpleString(s, replicaOut);
         }
 
-        if(serverConfig.isReplica()) return;
+        if(serverConfig.isReplica()) {
+            return;
+        }
 
         if(dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
@@ -436,7 +438,7 @@ public class CommandHandlers {
         writeSimpleString("OK", out);
     }
 
-    public void handleExec(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void handleExec(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'EXEC' command", out);
             return;
@@ -460,7 +462,7 @@ public class CommandHandlers {
             List<String> commandArray = queuedCommand.getCommand();
             OutputStream commandOutPutStream = queuedCommand.getOutputStream();
 
-            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(clientId, commandArray, commandOutPutStream);
+            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(clientId, commandArray, commandOutPutStream, serverConfig);
             if(RedisConstants.GET.equals(commandArray.get(0))) handleGet(clientId, commandArray, commandOutPutStream);
             if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(clientId, commandArray, commandOutPutStream);
         }

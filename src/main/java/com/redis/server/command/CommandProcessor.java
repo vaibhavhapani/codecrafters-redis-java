@@ -75,7 +75,7 @@ public class CommandProcessor {
                 handlers.handleMulti(clientId, command, out);
                 break;
             case RedisConstants.EXEC:
-                handlers.handleExec(clientId, command, out);
+                handlers.handleExec(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.DISCARD:
                 handlers.handleDiscard(clientId, command, out);
