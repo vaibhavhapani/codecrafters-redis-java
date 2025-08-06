@@ -4,7 +4,6 @@ import com.redis.server.model.QueuedCommand;
 import com.redis.server.model.RedisStream;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;

@@ -1,5 +1,7 @@
 package com.redis.server.replication;
 
+import com.redis.server.model.ServerConfig;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,25 +9,21 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class ReplicaConnectionManager {
-    private final String masterHost;
-    private final int masterPort;
-    private final int replicaPort;
+    private final ServerConfig serverConfig;
     private Socket masterSocket;
     private OutputStream masterOutput;
     private BufferedReader masterInput;
 
-    public ReplicaConnectionManager(String masterHost, int masterPort, int replicaPort){
-        this.masterHost = masterHost;
-        this.masterPort = masterPort;
-        this.replicaPort = replicaPort;
+    public ReplicaConnectionManager(ServerConfig serverConfig){
+        this.serverConfig = serverConfig;
     }
 
     public void connectToMaster() throws IOException {
-        System.out.println("Connecting to master at " + masterHost + ":" + masterPort);
+        System.out.println("Connecting to master at " + serverConfig.getMasterHost() + ":" + serverConfig.getMasterPort());
 
         try {
             // Connect to master
-            masterSocket = new Socket(masterHost, masterPort);
+            masterSocket = new Socket(serverConfig.getMasterHost(), serverConfig.getMasterPort());
             masterOutput = masterSocket.getOutputStream();
             masterInput = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
 
@@ -79,10 +77,10 @@ public class ReplicaConnectionManager {
     }
 
     private void sendReplconfListeningPort() throws IOException {
-        System.out.println("Sending REPLCONF listening-port " + replicaPort);
+        System.out.println("Sending REPLCONF listening-port " + serverConfig.getPort());
 
-        String portStr = String.valueOf(replicaPort);
-        String command = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" + portStr.length() + "\r\n" + replicaPort + "\r\n";
+        String portStr = String.valueOf(serverConfig.getPort());
+        String command = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" + portStr.length() + "\r\n" + serverConfig.getPort() + "\r\n";
         masterOutput.write(command.getBytes());
 
         System.out.println("REPLCONF listening-port sent: " + command.replace("\r\n", "\\r\\n"));

@@ -3,6 +3,7 @@ package com.redis.server;
 import com.redis.server.blocking.BlockingOperationsManager;
 import com.redis.server.client.ClientHandler;
 import com.redis.server.command.CommandProcessor;
+import com.redis.server.model.ServerConfig;
 import com.redis.server.replication.ReplicaConnectionManager;
 import com.redis.server.storage.DataStore;
 
@@ -11,38 +12,32 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class RedisServer {
-    private final int port;
-    private final boolean isReplica;
-    private final String masterHost;
-    private final int masterPort;
+    private final ServerConfig serverConfig;
     private final DataStore dataStore;
     private final BlockingOperationsManager blockingManager;
     private final CommandProcessor commandProcessor;
     private ReplicaConnectionManager replicaManager;
 
-    public RedisServer(int port, String masterHost, int masterPort, boolean isReplica) {
-        this.port = port;
-        this.masterHost = masterHost;
-        this.masterPort = masterPort;
-        this.isReplica = isReplica;
+    public RedisServer(ServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
         this.dataStore = new DataStore();
         this.blockingManager = new BlockingOperationsManager(dataStore);
-        this.commandProcessor = new CommandProcessor(isReplica, masterHost, masterPort, dataStore, blockingManager);
+        this.commandProcessor = new CommandProcessor(serverConfig, dataStore, blockingManager);
 
-        if(isReplica) replicaManager = new ReplicaConnectionManager(masterHost, masterPort, port);
+        if(serverConfig.isReplica()) replicaManager = new ReplicaConnectionManager(serverConfig);
     }
 
     public void start() {
         startTimeoutChecker();
 
-        if(isReplica) connectToMasterAsync();
+        if(serverConfig.isReplica()) connectToMasterAsync();
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket(serverConfig.getPort())) {
             serverSocket.setReuseAddress(true);
-            System.out.println("Redis server started on port " + port);
+            System.out.println("Redis server started on port " + serverConfig.getPort());
 
-            if (isReplica) {
-                System.out.println("Running as replica of " + masterHost + ":" + masterPort);
+            if (serverConfig.isReplica()) {
+                System.out.println("Running as replica of " + serverConfig.getMasterHost() + ":" + serverConfig.getMasterPort());
             } else {
                 System.out.println("Running as master");
             }

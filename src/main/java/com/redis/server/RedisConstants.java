@@ -20,25 +20,30 @@ public class RedisConstants {
     // Commands
     public static final String PING = "PING";
     public static final String ECHO = "ECHO";
-    public static final String TYPE = "TYPE";
     public static final String SET = "SET";
     public static final String GET = "GET";
+    //Lists
     public static final String RPUSH = "RPUSH";
     public static final String LPUSH = "LPUSH";
     public static final String LRANGE = "LRANGE";
     public static final String LLEN = "LLEN";
     public static final String LPOP = "LPOP";
     public static final String BLPOP = "BLPOP";
+    //Streams
+    public static final String TYPE = "TYPE";
     public static final String XADD = "XADD";
     public static final String XRANGE = "XRANGE";
     public static final String XREAD = "XREAD";
+    //Transaction
     public static final String INCR = "INCR";
     public static final String MULTI = "MULTI";
     public static final String EXEC = "EXEC";
     public static final String DISCARD = "DISCARD";
+    //Replication
     public static final String INFO = "INFO";
     public static final String REPLCONF = "REPLCONF";
     public static final String PSYNC = "PSYNC";
+    public static final String LISTENING_PORT = "listening-port";
 
     // Response messages
     public static final String PONG = "PONG";

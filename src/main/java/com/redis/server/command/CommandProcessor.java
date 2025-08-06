@@ -2,6 +2,7 @@ package com.redis.server.command;
 
 import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
+import com.redis.server.model.ServerConfig;
 import com.redis.server.protocol.RespProtocol;
 import com.redis.server.storage.DataStore;
 
@@ -13,14 +14,10 @@ public class CommandProcessor {
 
     private final CommandHandlers handlers;
     private final DataStore dataStore;
-    private final boolean isReplica;
-    private final String masterHost;
-    private final int masterPort;
+    private final ServerConfig serverConfig;
 
-    public CommandProcessor(Boolean isReplica, String masterHost, int masterPort, DataStore dataStore, BlockingOperationsManager blockingManager) {
-        this.isReplica = isReplica;
-        this.masterHost = masterHost;
-        this.masterPort = masterPort;
+    public CommandProcessor(ServerConfig serverConfig, DataStore dataStore, BlockingOperationsManager blockingManager) {
+        this.serverConfig = serverConfig;
         this.dataStore = dataStore;
         this.handlers = new CommandHandlers(dataStore, blockingManager);
     }
@@ -39,7 +36,7 @@ public class CommandProcessor {
                 handlers.handleType(command, out);
                 break;
             case RedisConstants.SET:
-                handlers.handleSet(clientId, command, out);
+                handlers.handleSet(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.GET:
                 handlers.handleGet(clientId, command, out);
@@ -84,10 +81,10 @@ public class CommandProcessor {
                 handlers.handleDiscard(clientId, command, out);
                 break;
             case RedisConstants.INFO:
-                handlers.handleInfo(clientId, command, out, isReplica, masterHost, masterPort);
+                handlers.handleInfo(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.REPLCONF:
-                handlers.handleReplconf(clientId, command, out);
+                handlers.handleReplconf(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.PSYNC:
                 handlers.handlePsync(clientId, command, out);

@@ -2,10 +2,7 @@ package com.redis.server.command;
 
 import com.redis.server.RedisConstants;
 import com.redis.server.blocking.BlockingOperationsManager;
-import com.redis.server.model.QueuedCommand;
-import com.redis.server.model.RedisStream;
-import com.redis.server.model.StreamEntry;
-import com.redis.server.model.StreamReadResult;
+import com.redis.server.model.*;
 import com.redis.server.protocol.RespProtocol;
 import com.redis.server.storage.DataStore;
 
@@ -50,11 +47,19 @@ public class CommandHandlers {
         writeSimpleString(keyType, out);
     }
 
-    public void handleSet(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void handleSet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'SET' command", out);
             return;
         }
+
+        if(serverConfig.hasReplica()) {
+            OutputStream replicaOut = serverConfig.getReplicaOutputStream();
+            writeArray(command.size(), replicaOut);
+            for(String s: command) writeSimpleString(s, replicaOut);
+        }
+
+        if(serverConfig.isReplica()) return;
 
         if(dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
@@ -476,22 +481,29 @@ public class CommandHandlers {
         writeSimpleString("OK", out);
     }
 
-    public void handleInfo(String clientId, List<String> command, OutputStream out, Boolean isReplica, String masterHost, int masterPort) throws IOException {
+    public void handleInfo(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INFO' command", out);
             return;
         }
 
-        if(isReplica) writeBulkString("role:slave", out);
+        if(serverConfig.isReplica()) writeBulkString("role:slave", out);
         else {
             writeBulkString("role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb", out);
         }
     }
 
-    public void handleReplconf(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void handleReplconf(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'REPLCONF' command", out);
             return;
+        }
+
+        String arg1 = command.get(1);
+        String arg2 = command.get(2);
+
+        if(RedisConstants.LISTENING_PORT.equals(arg1)){
+            serverConfig.setReplicaPort(Integer.parseInt(arg2));
         }
 
         System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
@@ -516,5 +528,7 @@ public class CommandHandlers {
             out.write(header.getBytes());
             out.write(rdbFileBytes);
         }
+
+        // mark the current server as master
     }
 }

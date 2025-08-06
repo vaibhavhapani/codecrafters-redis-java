@@ -1,5 +1,7 @@
 package com.redis.server;
 
+import com.redis.server.model.ServerConfig;
+
 public class Main {
     public static void main(String[] args) {
         int len = args.length;
@@ -31,7 +33,8 @@ public class Main {
             }
         }
 
-        RedisServer server = new RedisServer(port, masterHost, masterPort, isReplica);
+        ServerConfig serverConfig = new ServerConfig(port, isReplica, masterHost, masterPort);
+        RedisServer server = new RedisServer(serverConfig);
         server.start();
     }
 }
