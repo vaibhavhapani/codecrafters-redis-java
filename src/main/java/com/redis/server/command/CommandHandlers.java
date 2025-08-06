@@ -53,8 +53,8 @@ public class CommandHandlers {
             return;
         }
 
-        if(serverConfig.hasReplica()) {
-            List<OutputStream> slaves = serverConfig.getSlaves();
+        if(serverConfig.hasReplicas()) {
+            List<OutputStream> slaves = serverConfig.getReplicaOutputStreams();
 
             for(OutputStream slave: slaves) {
                 writeArray(command.size(), slave);
@@ -508,9 +508,7 @@ public class CommandHandlers {
         String arg2 = command.get(2);
 
         if(RedisConstants.LISTENING_PORT.equals(arg1)){
-            serverConfig.setReplicaPort(Integer.parseInt(arg2));
-            serverConfig.addSlave(out);
-            System.out.println("Replica port: " + serverConfig.getReplicaPort() + " port: " + serverConfig.getPort());
+            serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
 
         System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));

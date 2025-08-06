@@ -3,25 +3,24 @@ package com.redis.server.model;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerConfig {
     private final int port;
     private final boolean isReplica;
     private final String masterHost;
     private final int masterPort;
-    private int replicaPort;
-    private List<OutputStream> slaves;
+    private final ConcurrentHashMap<OutputStream, Integer> replicas;
 
     public ServerConfig(int port, boolean isReplica, String masterHost, int masterPort) {
         this.port = port;
         this.isReplica = isReplica;
         this.masterHost = masterHost;
         this.masterPort = masterPort;
-        this.replicaPort = -1;
-        this.slaves = new ArrayList<>();
+        this.replicas = new ConcurrentHashMap<>();
     }
 
-    public int getPort(){
+    public int getPort() {
         return port;
     }
 
@@ -29,7 +28,7 @@ public class ServerConfig {
         return isReplica;
     }
 
-    public String getMasterHost(){
+    public String getMasterHost() {
         return masterHost;
     }
 
@@ -37,23 +36,30 @@ public class ServerConfig {
         return masterPort;
     }
 
-    public int getReplicaPort(){
-        return replicaPort;
+    public boolean isMaster() {
+        return !isReplica;
     }
 
-    public void setReplicaPort(int port){
-        this.replicaPort = port;
+    public boolean hasReplicas() {
+        return !replicas.isEmpty();
     }
 
-    public boolean hasReplica() {
-        return replicaPort != -1;
+    public int getReplicaCount() {
+        return replicas.size();
     }
 
-    public List<OutputStream> getSlaves() {
-        return slaves;
+    public Integer getReplicaPort(OutputStream outputStream) {
+        return replicas.get(outputStream);
     }
 
-    public void addSlave(OutputStream out){
-        slaves.add(out);
+    public void addReplica(OutputStream out, int port) {
+        if (isMaster()) {
+            replicas.put(out, port);
+            System.out.println("Added replica on port " + port + ". Total replicas: " + getReplicaCount());
+        }
+    }
+
+    public List<OutputStream> getReplicaOutputStreams() {
+        return new ArrayList<>(replicas.keySet());
     }
 }
