@@ -506,6 +506,7 @@ public class CommandHandlers {
 
         if(RedisConstants.LISTENING_PORT.equals(arg1)){
             serverConfig.setReplicaPort(Integer.parseInt(arg2));
+            serverConfig.setReplicaOutputStream(out);
         }
 
         System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
