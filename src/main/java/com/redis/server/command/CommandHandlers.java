@@ -79,6 +79,8 @@ public class CommandHandlers {
             dataStore.setValue(key, value);
         }
 
+        System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
+
         if(!serverConfig.isReplica()) writeSimpleString(RedisConstants.OK, out);
     }
 
