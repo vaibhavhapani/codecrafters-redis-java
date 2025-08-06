@@ -62,10 +62,6 @@ public class CommandHandlers {
             }
         }
 
-        if(serverConfig.isReplica()) {
-            return;
-        }
-
         if(dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
@@ -83,7 +79,7 @@ public class CommandHandlers {
             dataStore.setValue(key, value);
         }
 
-        writeSimpleString(RedisConstants.OK, out);
+        if(!serverConfig.isReplica()) writeSimpleString(RedisConstants.OK, out);
     }
 
     public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
