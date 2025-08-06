@@ -82,7 +82,7 @@ public class CommandHandlers {
         if(!serverConfig.isReplica()) writeSimpleString(RedisConstants.OK, out);
     }
 
-    public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void handleGet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'GET' command", out);
             return;
@@ -96,6 +96,8 @@ public class CommandHandlers {
 
         String key = command.get(1);
         String value = dataStore.getValue(key);
+
+        System.out.println("Replica? " + serverConfig.isReplica() + " value: " + value);
         writeBulkString(value, out);
     }
 

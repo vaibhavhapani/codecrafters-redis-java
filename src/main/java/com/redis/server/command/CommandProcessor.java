@@ -39,7 +39,7 @@ public class CommandProcessor {
                 handlers.handleSet(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.GET:
-                handlers.handleGet(clientId, command, out);
+                handlers.handleGet(clientId, command, out, serverConfig);
                 break;
             case RedisConstants.RPUSH:
                 handlers.handleRPush(command, out);
