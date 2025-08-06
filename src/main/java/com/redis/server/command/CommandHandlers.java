@@ -54,9 +54,12 @@ public class CommandHandlers {
         }
 
         if(serverConfig.hasReplica()) {
-            OutputStream replicaOut = serverConfig.getReplicaOutputStream();
-            writeArray(command.size(), replicaOut);
-            for(String s: command) writeSimpleString(s, replicaOut);
+            List<OutputStream> slaves = serverConfig.getSlaves();
+
+            for(OutputStream slave: slaves) {
+                writeArray(command.size(), slave);
+                for(String s: command) writeSimpleString(s, slave);
+            }
         }
 
         if(serverConfig.isReplica()) {
@@ -380,7 +383,7 @@ public class CommandHandlers {
             }
 
             if("$".equals(startId)) {
-                if(stream != null && !stream.isEmpty()) startId = stream.getLastEntry().getId();
+                if(!stream.isEmpty()) startId = stream.getLastEntry().getId();
                 else startId = "0-0";
                 startIds.set(i, startId);
             }
@@ -506,7 +509,8 @@ public class CommandHandlers {
 
         if(RedisConstants.LISTENING_PORT.equals(arg1)){
             serverConfig.setReplicaPort(Integer.parseInt(arg2));
-            serverConfig.setReplicaOutputStream(out);
+            serverConfig.addSlave(out);
+            System.out.println("Replica port: " + serverConfig.getReplicaPort() + " port: " + serverConfig.getPort());
         }
 
         System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
@@ -531,7 +535,5 @@ public class CommandHandlers {
             out.write(header.getBytes());
             out.write(rdbFileBytes);
         }
-
-        // mark the current server as master
     }
 }

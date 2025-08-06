@@ -1,6 +1,8 @@
 package com.redis.server.model;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerConfig {
     private final int port;
@@ -8,7 +10,7 @@ public class ServerConfig {
     private final String masterHost;
     private final int masterPort;
     private int replicaPort;
-    private OutputStream replicaOutputStream;
+    private List<OutputStream> slaves;
 
     public ServerConfig(int port, boolean isReplica, String masterHost, int masterPort) {
         this.port = port;
@@ -16,7 +18,7 @@ public class ServerConfig {
         this.masterHost = masterHost;
         this.masterPort = masterPort;
         this.replicaPort = -1;
-        this.replicaOutputStream = null;
+        this.slaves = new ArrayList<>();
     }
 
     public int getPort(){
@@ -47,11 +49,11 @@ public class ServerConfig {
         return replicaPort != -1;
     }
 
-    public OutputStream getReplicaOutputStream() {
-        return replicaOutputStream;
+    public List<OutputStream> getSlaves() {
+        return slaves;
     }
 
-    public void setReplicaOutputStream(OutputStream out){
-        replicaOutputStream = out;
+    public void addSlave(OutputStream out){
+        slaves.add(out);
     }
 }
