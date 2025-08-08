@@ -4,10 +4,7 @@ import com.redis.server.RedisConstants;
 import com.redis.server.command.CommandProcessor;
 import com.redis.server.model.ServerConfig;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +15,7 @@ public class ReplicaConnectionManager {
     private Socket masterSocket;
     private OutputStream masterOutput;
     private BufferedReader masterInput;
+    private InputStream masterInputStream;
 
     public ReplicaConnectionManager(ServerConfig serverConfig, CommandProcessor commandProcessor) {
         this.serverConfig = serverConfig;
@@ -31,7 +29,8 @@ public class ReplicaConnectionManager {
             // Connect to master
             masterSocket = new Socket(serverConfig.getMasterHost(), serverConfig.getMasterPort());
             masterOutput = masterSocket.getOutputStream();
-            masterInput = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
+            masterInputStream = masterSocket.getInputStream();
+            masterInput = new BufferedReader(new InputStreamReader(masterInputStream));
 
             System.out.println("Connected to master successfully");
 
@@ -141,7 +140,6 @@ public class ReplicaConnectionManager {
 
     private void skipRDBFile() throws IOException {
         String lengthLine = masterInput.readLine();
-        System.out.println("RDB length line: " + lengthLine);
 
         if (lengthLine != null && lengthLine.startsWith("$")) {
             int rdbLength = Integer.parseInt(lengthLine.substring(1));
@@ -151,7 +149,7 @@ public class ReplicaConnectionManager {
             byte[] rdbData = new byte[rdbLength];
             int totalRead = 0;
             while (totalRead < rdbLength) {
-                int bytesRead = masterSocket.getInputStream().read(rdbData, totalRead, rdbLength - totalRead);
+                int bytesRead = masterInputStream.read(rdbData, totalRead, rdbLength - totalRead);
                 if (bytesRead == -1) {
                     throw new IOException("Unexpected end of stream while reading RDB file");
                 }
@@ -169,7 +167,8 @@ public class ReplicaConnectionManager {
                 while (!masterSocket.isClosed()) {
                     try {
                         // Parse incoming RESP command from master
-                        List<String> command = parseRespArray(masterInput.readLine(), masterInput);
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(masterInputStream));
+                        List<String> command = parseRespArray(reader.readLine(), reader);
 
                         if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
