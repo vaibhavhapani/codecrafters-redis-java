@@ -24,7 +24,7 @@ public class RedisServer {
         this.blockingManager = new BlockingOperationsManager(dataStore);
         this.commandProcessor = new CommandProcessor(serverConfig, dataStore, blockingManager);
 
-        if(serverConfig.isReplica()) replicaManager = new ReplicaConnectionManager(serverConfig);
+        if(serverConfig.isReplica()) replicaManager = new ReplicaConnectionManager(serverConfig, commandProcessor);
     }
 
     public void start() {

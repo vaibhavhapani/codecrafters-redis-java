@@ -1,5 +1,7 @@
 package com.redis.server.replication;
 
+import com.redis.server.RedisConstants;
+import com.redis.server.command.CommandProcessor;
 import com.redis.server.model.ServerConfig;
 
 import java.io.BufferedReader;
@@ -7,15 +9,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReplicaConnectionManager {
     private final ServerConfig serverConfig;
+    private final CommandProcessor commandProcessor;
     private Socket masterSocket;
     private OutputStream masterOutput;
     private BufferedReader masterInput;
 
-    public ReplicaConnectionManager(ServerConfig serverConfig){
+    public ReplicaConnectionManager(ServerConfig serverConfig, CommandProcessor commandProcessor) {
         this.serverConfig = serverConfig;
+        this.commandProcessor = commandProcessor;
     }
 
     public void connectToMaster() throws IOException {
@@ -31,6 +37,9 @@ public class ReplicaConnectionManager {
 
             // Start handshake process
             performHandshake();
+
+            // Start listening for propagated commands
+            startCommandListener();
 
         } catch (IOException e) {
             System.err.println("Failed to connect to master: " + e.getMessage());
@@ -122,6 +131,88 @@ public class ReplicaConnectionManager {
         String response = masterInput.readLine();
         if (response != null) {
             System.out.println("Received PSYNC response: " + response);
+
+            if (response.startsWith("+FULLRESYNC")) {
+                System.out.println("Full resync initiated, reading RDB file...");
+                skipRDBFile();
+            }
         }
     }
+
+    private void skipRDBFile() throws IOException {
+        String lengthLine = masterInput.readLine();
+        System.out.println("RDB length line: " + lengthLine);
+
+        if (lengthLine != null && lengthLine.startsWith("$")) {
+            int rdbLength = Integer.parseInt(lengthLine.substring(1));
+            System.out.println("RDB file length: " + rdbLength + " bytes");
+
+            // Read and discard the RDB file bytes
+            byte[] rdbData = new byte[rdbLength];
+            int totalRead = 0;
+            while (totalRead < rdbLength) {
+                int bytesRead = masterSocket.getInputStream().read(rdbData, totalRead, rdbLength - totalRead);
+                if (bytesRead == -1) {
+                    throw new IOException("Unexpected end of stream while reading RDB file");
+                }
+                totalRead += bytesRead;
+            }
+            System.out.println("RDB file read and discarded (" + totalRead + " bytes)");
+        }
+    }
+
+    private void startCommandListener() {
+        System.out.println("Starting command listener for propagated commands...");
+
+        new Thread(() -> {
+            try {
+                while (!masterSocket.isClosed()) {
+                    try {
+                        // Parse incoming RESP command from master
+                        List<String> command = parseRespArray(masterInput.readLine(), masterInput);
+
+                        if (command != null && !command.isEmpty()) {
+                            System.out.println("Received propagated command: " + command);
+
+                            OutputStream dummyOut = new OutputStream() {
+                                @Override
+                                public void write(int b) throws IOException {
+                                    // Discard output - replicas don't respond to propagated commands
+                                }
+                            };
+
+                            String replicationClientId = "replication-" + System.currentTimeMillis();
+                            commandProcessor.processCommand(replicationClientId, command, dummyOut);
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Error reading propagated command: " + e.getMessage());
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Command listener error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
+        int arrayLength = Integer.parseInt(arrayLine.substring(1));
+        List<String> command = new ArrayList<>();
+
+        for (int i = 0; i < arrayLength; i++) {
+            String lengthLine = in.readLine();
+            if (lengthLine != null && lengthLine.startsWith(RedisConstants.BULK_STRING_PREFIX)) {
+                int commandLength = Integer.parseInt(lengthLine.substring(1));
+                if (commandLength >= 0) {
+                    String element = in.readLine();
+                    if (element != null) {
+                        command.add(element);
+                    }
+                }
+            }
+        }
+        return command;
+    }
 }
+
