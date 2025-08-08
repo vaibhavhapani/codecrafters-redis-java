@@ -167,8 +167,7 @@ public class ReplicaConnectionManager {
                 while (!masterSocket.isClosed()) {
                     try {
                         // Parse incoming RESP command from master
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(masterInputStream));
-                        List<String> command = parseRespArray(reader.readLine(), reader);
+                        List<String> command = parseRespArray(masterInput.readLine(), masterInput);
 
                         if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
@@ -196,6 +195,7 @@ public class ReplicaConnectionManager {
     }
 
     private List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
+        System.out.println("parse====== " + arrayLine.startsWith("*"));
         int arrayLength = Integer.parseInt(arrayLine.substring(1));
         List<String> command = new ArrayList<>();
 
