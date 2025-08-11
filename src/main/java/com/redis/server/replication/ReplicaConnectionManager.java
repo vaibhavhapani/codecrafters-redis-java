@@ -208,7 +208,7 @@ public class ReplicaConnectionManager {
     }
 
     private List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
-        System.out.println("parse====== " + arrayLine.startsWith("*"));
+        System.out.println("parse====== " + arrayLine.startsWith("*") + " arrayline: " + arrayLine);
         int arrayLength = Integer.parseInt(arrayLine.substring(1));
         List<String> command = new ArrayList<>();
 
