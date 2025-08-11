@@ -53,8 +53,6 @@ public class CommandHandlers {
             return;
         }
 
-        System.out.println("Set check 1: "+ serverConfig.isReplica());
-
         if(serverConfig.hasReplicas()) {
             List<OutputStream> slaves = serverConfig.getReplicaOutputStreams();
 
@@ -63,8 +61,6 @@ public class CommandHandlers {
                 for(String s: command) writeSimpleString(s, slave);
             }
         }
-
-        System.out.println("Set check 2: "+ serverConfig.isReplica());
 
         if(dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
@@ -84,7 +80,7 @@ public class CommandHandlers {
             dataStore.setValue(key, value);
         }
 
-        System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
+        // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
 
         if(!serverConfig.isReplica()) writeSimpleString(RedisConstants.OK, out);
     }
