@@ -38,9 +38,6 @@ public class ReplicaConnectionManager {
             // Start handshake process
             performHandshake();
 
-            // Start listening for propagated commands
-            startCommandListener();
-
         } catch (IOException e) {
             System.err.println("Failed to connect to master: " + e.getMessage());
             throw e;
@@ -135,6 +132,9 @@ public class ReplicaConnectionManager {
             if (response.startsWith("+FULLRESYNC")) {
                 System.out.println("Full resync initiated, reading RDB file...");
                 skipRDBFile();
+
+                // Start listening for propagated commands
+                startCommandListener();
             }
         }
     }
