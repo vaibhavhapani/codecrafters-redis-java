@@ -139,9 +139,22 @@ public class ReplicaConnectionManager {
     }
 
     private void skipRDBFile() throws IOException {
-        String lengthLine = masterInput.readLine();
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = masterInputStream.read()) != -1) {
+            if (b == '\r') {
+                int next = masterInputStream.read();
+                if (next == '\n') break;
+                sb.append((char)b).append((char)next);
+            } else {
+                sb.append((char)b);
+            }
+        }
 
-        if (lengthLine != null && lengthLine.startsWith("$")) {
+        String lengthLine = sb.toString();
+
+
+        if (lengthLine.startsWith("$")) {
             int rdbLength = Integer.parseInt(lengthLine.substring(1));
             System.out.println("RDB file length: " + rdbLength + " bytes");
 
