@@ -508,11 +508,18 @@ public class CommandHandlers {
         String arg1 = command.get(1);
         String arg2 = command.get(2);
 
+        System.out.println("Handling REPLCONF command: " + arg1 + " " + arg2);
+
         if(RedisConstants.LISTENING_PORT.equals(arg1)){
             serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
-
-        System.out.println("Handling REPLCONF command: " + command.get(1) + " " + command.get(2));
+        if(RedisConstants.GETACK.equals(arg1)) {
+            writeArray(3, out);
+            writeBulkString("REPLCONF", out);
+            writeBulkString("ACK", out);
+            writeBulkString("0", out);
+            return;
+        }
         writeSimpleString("OK", out);
     }
 
