@@ -186,15 +186,8 @@ public class ReplicaConnectionManager {
                         if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
 
-                            OutputStream dummyOut = new OutputStream() {
-                                @Override
-                                public void write(int b) throws IOException {
-                                    // Discard output - replicas don't respond to propagated commands
-                                }
-                            };
-
                             String replicationClientId = "replication-" + System.currentTimeMillis();
-                            commandProcessor.processCommand(replicationClientId, command, dummyOut);
+                            commandProcessor.processCommand(replicationClientId, command, masterOutput);
                         }
                     } catch (IOException e) {
                         System.err.println("Error reading propagated command: " + e.getMessage());
