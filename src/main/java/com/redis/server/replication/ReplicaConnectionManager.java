@@ -133,7 +133,7 @@ public class ReplicaConnectionManager {
                 System.out.println("Full resync initiated, reading RDB file...");
                 skipRDBFile();
 
-                // Start listening for propagated commands
+                System.out.println("Starting command listener for propagated commands...");
                 startCommandListener();
             }
         }
