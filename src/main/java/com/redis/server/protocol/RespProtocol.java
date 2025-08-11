@@ -4,8 +4,10 @@ import com.redis.server.RedisConstants;
 import com.redis.server.model.StreamEntry;
 import com.redis.server.model.StreamReadResult;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,5 +78,24 @@ public class RespProtocol {
                 RespProtocol.writeBulkString(it.getValue(), out);
             }
         }
+    }
+
+    public static List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
+        int arrayLength = Integer.parseInt(arrayLine.substring(1));
+        List<String> command = new ArrayList<>();
+
+        for (int i = 0; i < arrayLength; i++) {
+            String lengthLine = in.readLine();
+            if (lengthLine != null && lengthLine.startsWith(RedisConstants.BULK_STRING_PREFIX)) {
+                int commandLength = Integer.parseInt(lengthLine.substring(1));
+                if (commandLength >= 0) {
+                    String element = in.readLine();
+                    if (element != null) {
+                        command.add(element);
+                    }
+                }
+            }
+        }
+        return command;
     }
 }

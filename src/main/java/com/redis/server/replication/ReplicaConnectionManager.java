@@ -3,6 +3,7 @@ package com.redis.server.replication;
 import com.redis.server.RedisConstants;
 import com.redis.server.command.CommandProcessor;
 import com.redis.server.model.ServerConfig;
+import com.redis.server.protocol.RespProtocol;
 
 import java.io.*;
 import java.net.Socket;
@@ -180,7 +181,7 @@ public class ReplicaConnectionManager {
                 while (!masterSocket.isClosed()) {
                     try {
                         // Parse incoming RESP command from master
-                        List<String> command = parseRespArray(masterInput.readLine(), masterInput);
+                        List<String> command = RespProtocol.parseRespArray(masterInput.readLine(), masterInput);
 
                         if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
@@ -205,26 +206,6 @@ public class ReplicaConnectionManager {
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    private List<String> parseRespArray(String arrayLine, BufferedReader in) throws IOException {
-        System.out.println("parse====== " + arrayLine.startsWith("*"));
-        int arrayLength = Integer.parseInt(arrayLine.substring(1));
-        List<String> command = new ArrayList<>();
-
-        for (int i = 0; i < arrayLength; i++) {
-            String lengthLine = in.readLine();
-            if (lengthLine != null && lengthLine.startsWith(RedisConstants.BULK_STRING_PREFIX)) {
-                int commandLength = Integer.parseInt(lengthLine.substring(1));
-                if (commandLength >= 0) {
-                    String element = in.readLine();
-                    if (element != null) {
-                        command.add(element);
-                    }
-                }
-            }
-        }
-        return command;
     }
 }
 
