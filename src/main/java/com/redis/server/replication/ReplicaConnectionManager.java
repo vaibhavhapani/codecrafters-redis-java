@@ -140,19 +140,34 @@ public class ReplicaConnectionManager {
     }
 
     private void skipRDBFile() throws IOException {
-        System.out.println("hello1: ");
+        System.out.println("hello1: about to read from masterInputStream");
         StringBuilder sb = new StringBuilder();
         int b;
+        int bytesRead = 0;
         while ((b = masterInputStream.read()) != -1) {
+            bytesRead++;
+            System.out.println("Read byte " + bytesRead + ": '" + (char)b + "' (ASCII: " + b + ")");
             if (b == '\r') {
                 int next = masterInputStream.read();
-                if (next == '\n') break;
+                if (next == -1) {
+                    System.out.println("Got \\r but next byte is EOF!");
+                    break;
+                }
+                bytesRead++;
+                System.out.println("Read byte " + bytesRead + ": '" + (char)next + "' (ASCII: " + next + ")");
+                if (next == '\n') {
+                    System.out.println("Found \\r\\n, breaking with sb = '" + sb.toString() + "'");
+                    break;
+                }
                 sb.append((char)b).append((char)next);
             } else {
                 sb.append((char)b);
             }
         }
 
+        if (b == -1) {
+            System.out.println("Stream ended unexpectedly after " + bytesRead + " bytes");
+        }
         String lengthLine = sb.toString();
         System.out.println("hello2: lengthLine = '" + lengthLine + "'");
 
