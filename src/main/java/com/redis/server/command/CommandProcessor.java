@@ -22,7 +22,7 @@ public class CommandProcessor {
         this.handlers = new CommandHandlers(dataStore, blockingManager, serverConfig);
     }
 
-    public void processCommand(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void processCommand(String clientId, List<String> command, OutputStream out) throws IOException, InterruptedException {
         String commandName = command.get(0).toUpperCase();
 
         switch (commandName) {

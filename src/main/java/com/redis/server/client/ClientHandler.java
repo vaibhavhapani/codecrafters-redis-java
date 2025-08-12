@@ -42,6 +42,8 @@ public class ClientHandler implements Runnable {
             }
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             commandProcessor.cleanupClient(clientId);
             try {
