@@ -74,6 +74,10 @@ public class ServerConfig {
         this.upToDateReplicas = upToDateReplicas;
     }
 
+    public void getUpToDateReplicas(int num) {
+        this.upToDateReplicas = num;
+    }
+
     public int getUpToDateReplicas() {
         return upToDateReplicas;
     }

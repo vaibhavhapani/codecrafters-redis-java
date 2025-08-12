@@ -596,6 +596,7 @@ public class CommandHandlers {
             return;
         }
 
+        serverConfig.setUpToDateReplicas(0);
         serverConfig.getAck();
 
         int minimumUpToDateReplica = Integer.parseInt(command.get(1));
