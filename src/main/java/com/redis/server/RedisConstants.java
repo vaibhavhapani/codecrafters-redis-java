@@ -45,6 +45,7 @@ public class RedisConstants {
     public static final String PSYNC = "PSYNC";
     public static final String LISTENING_PORT = "listening-port";
     public static final String GETACK = "GETACK";
+    public static final String WAIT = "WAIT";
 
     // Response messages
     public static final String PONG = "PONG";

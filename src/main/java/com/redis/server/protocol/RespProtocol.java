@@ -161,7 +161,6 @@ public class RespProtocol {
     public static int calculateRespCommandBytes(List<String> command) {
         int totalBytes = 0;
 
-        // Array header: *<count>\r\n
         String arrayCount = String.valueOf(command.size());
         totalBytes += 1 + arrayCount.length() + 2; // "*" + count + "\r\n"
 

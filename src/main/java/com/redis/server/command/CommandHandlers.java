@@ -561,4 +561,13 @@ public class CommandHandlers {
             out.write(rdbFileBytes);
         }
     }
+
+    public void handleWait(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'WAIT' command", out);
+            return;
+        }
+
+        if(!serverConfig.hasReplicas()) writeInteger(0, out);
+    }
 }
