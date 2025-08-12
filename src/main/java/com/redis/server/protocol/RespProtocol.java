@@ -175,7 +175,7 @@ public class RespProtocol {
             }
         }
 
-        //System.out.println("Command " + command + " uses " + totalBytes + " bytes");
+        System.out.println("Command " + command + " uses " + totalBytes + " bytes");
         return totalBytes;
     }
 
