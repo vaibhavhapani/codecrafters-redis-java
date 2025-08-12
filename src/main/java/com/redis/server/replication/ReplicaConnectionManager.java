@@ -1,13 +1,11 @@
 package com.redis.server.replication;
 
-import com.redis.server.RedisConstants;
 import com.redis.server.command.CommandProcessor;
 import com.redis.server.model.ServerConfig;
 import com.redis.server.protocol.RespProtocol;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReplicaConnectionManager {
@@ -65,7 +63,7 @@ public class ReplicaConnectionManager {
 
         try {
             String response = RespProtocol.readLineFromInputStream(masterInputStream);
-            if (response != null) {
+            if (!response.isEmpty()) {
                 System.out.println("Received response from master: " + response);
 
                 if ("+PONG".equals(response)) {
@@ -90,7 +88,7 @@ public class ReplicaConnectionManager {
         System.out.println("REPLCONF listening-port sent: " + command.replace("\r\n", "\\r\\n"));
 
         String response = RespProtocol.readLineFromInputStream(masterInputStream);
-        if (response != null) {
+        if (!response.isEmpty()) {
             System.out.println("Received REPLCONF listening-port response: " + response);
             if (!"+OK".equals(response)) {
                 System.err.println("Unexpected REPLCONF listening-port response: " + response);
@@ -107,7 +105,7 @@ public class ReplicaConnectionManager {
         System.out.println("REPLCONF capa sent: " + command.replace("\r\n", "\\r\\n"));
 
         String response = RespProtocol.readLineFromInputStream(masterInputStream);
-        if (response != null) {
+        if (!response.isEmpty()) {
             System.out.println("Received REPLCONF capa response: " + response);
             if (!"+OK".equals(response)) {
                 System.err.println("Unexpected REPLCONF capa response: " + response);
@@ -123,7 +121,7 @@ public class ReplicaConnectionManager {
         System.out.println("PSYNC sent: " + command.replace("\r\n", "\\r\\n"));
 
         String response = RespProtocol.readLineFromInputStream(masterInputStream);
-        if (response != null) {
+        if (!response.isEmpty()) {
             System.out.println("Received PSYNC response: " + response);
 
             if (response.startsWith("+FULLRESYNC")) {
@@ -167,7 +165,7 @@ public class ReplicaConnectionManager {
                         String arrayLine = RespProtocol.readLineFromInputStream(masterInputStream);
                         List<String> command = RespProtocol.parseRespArray(arrayLine, new BufferedReader(new InputStreamReader(masterInputStream)));
 
-                        if (command != null && !command.isEmpty()) {
+                        if (!command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
 
                             String replicationClientId = "replication-" + System.currentTimeMillis();
