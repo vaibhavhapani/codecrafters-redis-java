@@ -154,6 +154,7 @@ public class ReplicaConnectionManager {
         }
 
         String lengthLine = sb.toString();
+        System.out.println("hello2: lengthLine = '" + lengthLine + "'");
 
         System.out.println("hello2: ");
 
