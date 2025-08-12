@@ -572,5 +572,6 @@ public class CommandHandlers {
             System.out.println("wait: " + serverConfig.getReplicaCount());
             writeInteger(serverConfig.getReplicaCount(), out);
         }
+        System.out.println("wait2: " + serverConfig.getReplicaCount());
     }
 }
