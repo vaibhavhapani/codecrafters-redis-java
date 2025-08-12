@@ -182,11 +182,11 @@ public class ReplicaConnectionManager {
             byte[] rdbData = new byte[rdbLength];
             int totalRead = 0;
             while (totalRead < rdbLength) {
-                int bytesRead = masterInputStream.read(rdbData, totalRead, rdbLength - totalRead);
-                if (bytesRead == -1) {
+                int bytes = masterInputStream.read(rdbData, totalRead, rdbLength - totalRead);
+                if (bytes == -1) {
                     throw new IOException("Unexpected end of stream while reading RDB file");
                 }
-                totalRead += bytesRead;
+                totalRead += bytes;
             }
             System.out.println("RDB file read and discarded (" + totalRead + " bytes)");
         }
