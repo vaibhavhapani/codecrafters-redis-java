@@ -91,6 +91,7 @@ public class CommandHandlers {
 
         if(serverConfig.isMaster()) {
             serverConfig.setMasterOffset(serverConfig.getMasterOffset() + bytes);
+            System.out.println("master offset: " + serverConfig.getMasterOffset());
             writeSimpleString(RedisConstants.OK, out);
         }
         else {
