@@ -6,6 +6,7 @@ import com.redis.server.model.StreamReadResult;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,4 +99,20 @@ public class RespProtocol {
         }
         return command;
     }
+
+    public static String readLineFromInputStream(InputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\r') {
+                int next = in.read();
+                if (next == '\n') break;
+                sb.append((char)b).append((char)next);
+            } else {
+                sb.append((char)b);
+            }
+        }
+        return sb.toString();
+    }
+
 }

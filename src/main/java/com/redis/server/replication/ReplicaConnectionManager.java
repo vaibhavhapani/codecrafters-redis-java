@@ -122,17 +122,16 @@ public class ReplicaConnectionManager {
 
         String command = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
         masterOutput.write(command.getBytes());
-
         System.out.println("PSYNC sent: " + command.replace("\r\n", "\\r\\n"));
 
-        String response = masterInput.readLine();
+        // Use InputStream consistently
+        String response = RespProtocol.readLineFromInputStream(masterInputStream);
         if (response != null) {
             System.out.println("Received PSYNC response: " + response);
 
             if (response.startsWith("+FULLRESYNC")) {
                 System.out.println("Full resync initiated, reading RDB file...");
                 skipRDBFile();
-
                 System.out.println("Starting command listener for propagated commands...");
                 startCommandListener();
             }
