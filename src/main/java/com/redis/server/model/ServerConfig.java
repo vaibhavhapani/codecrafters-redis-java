@@ -1,9 +1,13 @@
 package com.redis.server.model;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.redis.server.protocol.RespProtocol.writeArray;
+import static com.redis.server.protocol.RespProtocol.writeBulkString;
 
 // COULD HAVE CREATED MASTER AND REPLICA CLASSES!!!
 
@@ -76,6 +80,16 @@ public class ServerConfig {
 
     public int getUpToDateReplicas() {
         return upToDateReplicas;
+    }
+
+    public void getAck() throws IOException {
+        for(OutputStream out: replicas.keySet()){
+            writeArray(3, out);
+            writeBulkString("REPLCONF", out);
+            writeBulkString("GETACK", out);
+            writeBulkString("*", out);
+            out.flush();
+        }
     }
 
     // ********************************************************* replica **********************************************************

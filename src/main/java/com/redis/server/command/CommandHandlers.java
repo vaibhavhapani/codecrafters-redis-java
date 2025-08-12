@@ -586,7 +586,7 @@ public class CommandHandlers {
             return;
         }
 
-        out.write("*3\r\n$8\r\nREPLCONF\r\n$3\r\nGETACK\r\n$1\r\n0\r\n".getBytes());
+        serverConfig.getAck();
         Thread.sleep(1);
 
         int minimumUpToDateReplica = Integer.parseInt(command.get(1));
