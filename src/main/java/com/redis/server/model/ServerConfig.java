@@ -51,10 +51,6 @@ public class ServerConfig {
         return replicas.size();
     }
 
-    public Integer getReplicaPort(OutputStream outputStream) {
-        return replicas.get(outputStream);
-    }
-
     public void addReplica(OutputStream out, int port) {
         if (isMaster()) {
             replicas.put(out, port);

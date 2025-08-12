@@ -60,11 +60,11 @@ public class CommandHandlers {
         }
 
         if (serverConfig.hasReplicas()) {
-            List<OutputStream> slaves = serverConfig.getReplicaOutputStreams();
+            List<OutputStream> replicas = serverConfig.getReplicaOutputStreams();
 
-            for (OutputStream slave : slaves) {
-                writeArray(command.size(), slave);
-                for (String s : command) writeSimpleString(s, slave);
+            for (OutputStream replicaOutputStream : replicas) {
+                writeArray(command.size(), replicaOutputStream);
+                for (String arg : command) writeSimpleString(arg, replicaOutputStream);
             }
         }
 
@@ -551,13 +551,15 @@ public class CommandHandlers {
                 break;
 
             case RedisConstants.ACK:
-                System.out.println("Ackkkkkkkkkkk");
+                System.out.println("Received ACK from replica");
                 int receivedReplicaOffset = Integer.parseInt(arg2);
 
                 if(receivedReplicaOffset == serverConfig.getMasterOffset()){
                     serverConfig.setUpToDateReplicas(serverConfig.getUpToDateReplicas() + 1);
                 }
-                System.out.println("up to date: " + serverConfig.getUpToDateReplicas());
+
+                System.out.println("Replica acknowledged offset: " + receivedReplicaOffset +
+                        ", Master offset: " + serverConfig.getMasterOffset());
                 break;
         }
 
@@ -589,20 +591,26 @@ public class CommandHandlers {
             return;
         }
 
+        if(!serverConfig.hasReplicas()){
+            writeInteger(0, out);
+            return;
+        }
+
         serverConfig.getAck();
-        Thread.sleep(1);
 
         int minimumUpToDateReplica = Integer.parseInt(command.get(1));
         long duration = Long.parseLong(command.get(2));
 
-        long currTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + duration;
 
-        while(System.currentTimeMillis() < currTime + duration) {
+        while(System.currentTimeMillis() < endTime) {
             if(serverConfig.getUpToDateReplicas() >= minimumUpToDateReplica) {
                 System.out.println("wait res sent: " + serverConfig.getUpToDateReplicas());
                 writeInteger(serverConfig.getUpToDateReplicas(), out);
                 return;
             }
+            Thread.sleep(1);
         }
 
         writeInteger(serverConfig.getUpToDateReplicas(), out);
