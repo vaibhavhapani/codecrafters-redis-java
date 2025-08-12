@@ -517,11 +517,13 @@ public class CommandHandlers {
             serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
         if (serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
+            String offset = String.valueOf(serverConfig.getReplicaOffset());
+
             System.out.println("REPLCONF getack: ");
             writeArray(3, out);
             writeBulkString("REPLCONF", out);
             writeBulkString("ACK", out);
-            writeBulkString("0", out);
+            writeBulkString(offset, out);
             return;
         }
         writeSimpleString("OK", out);
@@ -534,7 +536,7 @@ public class CommandHandlers {
         }
 
         String replId = command.get(1);
-        String replOffset = command.get(2);
+        String psyncOffset = command.get(2);
 
         if ("?".equals(replId)) {
             writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);

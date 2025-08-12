@@ -11,6 +11,7 @@ public class ServerConfig {
     private final String masterHost;
     private final int masterPort;
     private final ConcurrentHashMap<OutputStream, Integer> replicas;
+    private int replicaOffset;
 
     public ServerConfig(int port, boolean isReplica, String masterHost, int masterPort) {
         this.port = port;
@@ -18,6 +19,7 @@ public class ServerConfig {
         this.masterHost = masterHost;
         this.masterPort = masterPort;
         this.replicas = new ConcurrentHashMap<>();
+        replicaOffset = 0;
     }
 
     public int getPort() {
@@ -50,6 +52,14 @@ public class ServerConfig {
 
     public Integer getReplicaPort(OutputStream outputStream) {
         return replicas.get(outputStream);
+    }
+
+    public void setReplicaOffset(int val){
+        replicaOffset = val;
+    }
+
+    public int getReplicaOffset(){
+        return replicaOffset;
     }
 
     public void addReplica(OutputStream out, int port) {

@@ -117,9 +117,6 @@ public class RespProtocol {
 
     public static List<String> parseRespArrayFromInputStream(InputStream inputStream) throws IOException {
         String firstLine = readLineFromInputStream(inputStream);
-        if (firstLine == null) {
-            return null;
-        }
 
         if (!firstLine.startsWith("*")) {
             throw new IOException("Unexpected RESP array, got: " + firstLine);
