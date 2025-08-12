@@ -140,6 +140,7 @@ public class ReplicaConnectionManager {
     }
 
     private void skipRDBFile() throws IOException {
+        System.out.println("hello1: ");
         StringBuilder sb = new StringBuilder();
         int b;
         while ((b = masterInputStream.read()) != -1) {
@@ -154,8 +155,10 @@ public class ReplicaConnectionManager {
 
         String lengthLine = sb.toString();
 
+        System.out.println("hello2: ");
 
         if (lengthLine.startsWith("$")) {
+            System.out.println("hello3:  ");
             int rdbLength = Integer.parseInt(lengthLine.substring(1));
             System.out.println("RDB file length: " + rdbLength + " bytes");
 
