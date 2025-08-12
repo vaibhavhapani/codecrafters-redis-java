@@ -28,16 +28,16 @@ public class ServerConfig {
         return isReplica;
     }
 
+    public boolean isMaster() {
+        return !isReplica;
+    }
+
     public String getMasterHost() {
         return masterHost;
     }
 
     public int getMasterPort() {
         return masterPort;
-    }
-
-    public boolean isMaster() {
-        return !isReplica;
     }
 
     public boolean hasReplicas() {

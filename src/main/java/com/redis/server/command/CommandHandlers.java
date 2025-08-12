@@ -82,7 +82,7 @@ public class CommandHandlers {
 
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
 
-        if(!serverConfig.isReplica()) writeSimpleString(RedisConstants.OK, out);
+        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
     }
 
     public void handleGet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
@@ -514,6 +514,7 @@ public class CommandHandlers {
             serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
         if(serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
+            System.out.println("REPLCONF getack: ");
             writeArray(3, out);
             writeBulkString("REPLCONF", out);
             writeBulkString("ACK", out);
