@@ -554,7 +554,7 @@ public class CommandHandlers {
                 System.out.println("Received ACK from replica");
                 int receivedReplicaOffset = Integer.parseInt(arg2);
 
-                if(receivedReplicaOffset <= serverConfig.getMasterOffset()){
+                if(receivedReplicaOffset >= serverConfig.getMasterOffset()){
                     serverConfig.setUpToDateReplicas(serverConfig.getUpToDateReplicas() + 1);
                 }
 
