@@ -87,10 +87,13 @@ public class CommandHandlers {
         }
 
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
+        int bytes = RespProtocol.calculateRespCommandBytes(command);
 
-        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
+        if(serverConfig.isMaster()) {
+            serverConfig.setMasterOffset(serverConfig.getMasterOffset() + bytes);
+            writeSimpleString(RedisConstants.OK, out);
+        }
         else {
-            int bytes = RespProtocol.calculateRespCommandBytes(command);
             serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
         }
     }
@@ -523,23 +526,38 @@ public class CommandHandlers {
 
         System.out.println("Handling REPLCONF command: " + arg1 + " " + arg2);
 
-        if (RedisConstants.LISTENING_PORT.equals(arg1)) {
-            serverConfig.addReplica(out, Integer.parseInt(arg2));
+        switch (arg1) {
+            case RedisConstants.LISTENING_PORT:
+                serverConfig.addReplica(out, Integer.parseInt(arg2));
+                writeSimpleString("OK", out);
+                break;
+
+            case RedisConstants.CAPABILITIES:
+                writeSimpleString("OK", out);
+                break;
+
+            case RedisConstants.GETACK:
+                String offset = String.valueOf(serverConfig.getReplicaOffset());
+
+                writeArray(3, out);
+                writeBulkString("REPLCONF", out);
+                writeBulkString("ACK", out);
+                writeBulkString(offset, out);
+
+                int bytes = RespProtocol.calculateRespCommandBytes(command);
+                serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+                break;
+
+            case RedisConstants.ACK:
+                System.out.println("Ackkkkkkkkkkk");
+                int receivedReplicaOffset = Integer.parseInt(arg2);
+
+                if(receivedReplicaOffset == serverConfig.getMasterOffset()){
+                    serverConfig.setUpToDateReplicas(serverConfig.getUpToDateReplicas() + 1);
+                }
+                break;
         }
-        if (serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
-            String offset = String.valueOf(serverConfig.getReplicaOffset());
 
-            writeArray(3, out);
-            writeBulkString("REPLCONF", out);
-            writeBulkString("ACK", out);
-            writeBulkString(offset, out);
-
-            int bytes = RespProtocol.calculateRespCommandBytes(command);
-            serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
-
-            return;
-        }
-        writeSimpleString("OK", out);
     }
 
     public void handlePsync(String clientId, List<String> command, OutputStream out) throws IOException {
@@ -568,6 +586,6 @@ public class CommandHandlers {
             return;
         }
 
-        writeInteger(serverConfig.getReplicaCount(), out);
+        writeInteger(serverConfig.getUpToDateReplicas(), out);
     }
 }
