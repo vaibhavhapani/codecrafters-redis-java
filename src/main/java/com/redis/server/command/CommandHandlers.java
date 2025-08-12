@@ -513,7 +513,7 @@ public class CommandHandlers {
         if(RedisConstants.LISTENING_PORT.equals(arg1)){
             serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
-        if(RedisConstants.GETACK.equals(arg1)) {
+        if(serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
             writeArray(3, out);
             writeBulkString("REPLCONF", out);
             writeBulkString("ACK", out);

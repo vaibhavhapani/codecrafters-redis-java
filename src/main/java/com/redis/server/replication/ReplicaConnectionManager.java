@@ -174,8 +174,6 @@ public class ReplicaConnectionManager {
     }
 
     private void startCommandListener() {
-        System.out.println("Starting command listener for propagated commands...");
-
         new Thread(() -> {
             try {
                 while (!masterSocket.isClosed()) {
