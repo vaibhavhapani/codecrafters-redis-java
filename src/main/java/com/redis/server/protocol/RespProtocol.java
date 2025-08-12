@@ -43,8 +43,8 @@ public class RespProtocol {
 
     public static void writeEntry(StreamEntry entry, OutputStream out) throws IOException {
         Map<String, String> fields = entry.getFields();
-        writeInteger(fields.size(), out);
-        for(Map.Entry<String, String> it: fields.entrySet()){
+        writeInteger(2 * fields.size(), out);
+        for (Map.Entry<String, String> it : fields.entrySet()) {
             writeBulkString(it.getKey(), out);
             writeBulkString(it.getValue(), out);
         }
@@ -67,14 +67,14 @@ public class RespProtocol {
         RespProtocol.writeBulkString(streamKey, out);
         RespProtocol.writeArray(entries.size(), out); // no of entries in an array
 
-        for(StreamEntry entry: entries) {
+        for (StreamEntry entry : entries) {
             RespProtocol.writeArray(2, out); // id, list of pairs
             RespProtocol.writeBulkString(entry.getId(), out);
 
             Map<String, String> fields = entry.getFields();
-            RespProtocol.writeArray(2*fields.size(), out); // key-value
+            RespProtocol.writeArray(2 * fields.size(), out); // key-value
 
-            for(Map.Entry<String, String> it: fields.entrySet()){
+            for (Map.Entry<String, String> it : fields.entrySet()) {
                 RespProtocol.writeBulkString(it.getKey(), out);
                 RespProtocol.writeBulkString(it.getValue(), out);
             }
@@ -107,58 +107,58 @@ public class RespProtocol {
             if (b == '\r') {
                 int next = in.read();
                 if (next == '\n') break;
-                sb.append((char)b).append((char)next);
+                sb.append((char) b).append((char) next);
             } else {
-                sb.append((char)b);
+                sb.append((char) b);
             }
         }
         return sb.toString();
     }
 
-//    public static List<String> parseRespArrayFromInputStream(InputStream inputStream) throws IOException {
-//        String firstLine = readLineFromInputStream(inputStream);
-//        if (firstLine == null) {
-//            return null;
-//        }
-//
-//        if (!firstLine.startsWith("*")) {
-//            throw new IOException("Unexpected RESP array, got: " + firstLine);
-//        }
-//
-//        int arrayLength = Integer.parseInt(firstLine.substring(1));
-//        List<String> result = new ArrayList<>();
-//
-//        for (int i = 0; i < arrayLength; i++) {
-//            String lengthLine = readLineFromInputStream(inputStream);
-//            if (lengthLine == null || !lengthLine.startsWith("$")) {
-//                throw new IOException("Expected bulk string length, got: " + lengthLine);
-//            }
-//
-//            int stringLength = Integer.parseInt(lengthLine.substring(1));
-//            if (stringLength == -1) {
-//                result.add(null);
-//            } else {
-//                byte[] data = new byte[stringLength];
-//                int totalRead = 0;
-//                while (totalRead < stringLength) {
-//                    int bytesRead = inputStream.read(data, totalRead, stringLength - totalRead);
-//                    if (bytesRead == -1) {
-//                        throw new IOException("Unexpected end of stream while reading bulk string");
-//                    }
-//                    totalRead += bytesRead;
-//                }
-//
-//                int cr = inputStream.read();
-//                int lf = inputStream.read();
-//                if (cr != '\r' || lf != '\n') {
-//                    throw new IOException("Expected \\r\\n after bulk string data");
-//                }
-//
-//                result.add(new String(data));
-//            }
-//        }
-//
-//        return result;
-//    }
+    public static List<String> parseRespArrayFromInputStream(InputStream inputStream) throws IOException {
+        String firstLine = readLineFromInputStream(inputStream);
+        if (firstLine == null) {
+            return null;
+        }
+
+        if (!firstLine.startsWith("*")) {
+            throw new IOException("Unexpected RESP array, got: " + firstLine);
+        }
+
+        int arrayLength = Integer.parseInt(firstLine.substring(1));
+        List<String> result = new ArrayList<>();
+
+        for (int i = 0; i < arrayLength; i++) {
+            String lengthLine = readLineFromInputStream(inputStream);
+            if (!lengthLine.startsWith("$")) {
+                throw new IOException("Expected bulk string length, got: " + lengthLine);
+            }
+
+            int stringLength = Integer.parseInt(lengthLine.substring(1));
+            if (stringLength == -1) {
+                result.add(null);
+            } else {
+                byte[] data = new byte[stringLength];
+                int totalRead = 0;
+                while (totalRead < stringLength) {
+                    int bytesRead = inputStream.read(data, totalRead, stringLength - totalRead);
+                    if (bytesRead == -1) {
+                        throw new IOException("Unexpected end of stream while reading bulk string");
+                    }
+                    totalRead += bytesRead;
+                }
+
+                int cr = inputStream.read();
+                int lf = inputStream.read();
+                if (cr != '\r' || lf != '\n') {
+                    throw new IOException("Expected \\r\\n after bulk string data");
+                }
+
+                result.add(new String(data));
+            }
+        }
+
+        return result;
+    }
 
 }

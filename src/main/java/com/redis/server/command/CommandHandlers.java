@@ -53,16 +53,16 @@ public class CommandHandlers {
             return;
         }
 
-        if(serverConfig.hasReplicas()) {
+        if (serverConfig.hasReplicas()) {
             List<OutputStream> slaves = serverConfig.getReplicaOutputStreams();
 
-            for(OutputStream slave: slaves) {
+            for (OutputStream slave : slaves) {
                 writeArray(command.size(), slave);
-                for(String s: command) writeSimpleString(s, slave);
+                for (String s : command) writeSimpleString(s, slave);
             }
         }
 
-        if(dataStore.isMultiEnabled(clientId)) {
+        if (dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             System.out.println("no");
@@ -82,7 +82,7 @@ public class CommandHandlers {
 
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
 
-        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
+        if (serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
     }
 
     public void handleGet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
@@ -91,7 +91,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isMultiEnabled(clientId)) {
+        if (dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             return;
@@ -383,8 +383,8 @@ public class CommandHandlers {
                 continue;
             }
 
-            if("$".equals(startId)) {
-                if(!stream.isEmpty()) startId = stream.getLastEntry().getId();
+            if ("$".equals(startId)) {
+                if (!stream.isEmpty()) startId = stream.getLastEntry().getId();
                 else startId = "0-0";
                 startIds.set(i, startId);
             }
@@ -410,7 +410,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isMultiEnabled(clientId)) {
+        if (dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
             return;
@@ -419,8 +419,8 @@ public class CommandHandlers {
         String key = command.get(1);
         String value = dataStore.getValue(key);
 
-        if(value != null) {
-            try{
+        if (value != null) {
+            try {
                 int incrValue = Integer.parseInt(value) + 1;
                 dataStore.setValue(key, String.valueOf(incrValue));
                 writeInteger(incrValue, out);
@@ -448,27 +448,30 @@ public class CommandHandlers {
             return;
         }
 
-        if(!dataStore.isMultiEnabled(clientId)) {
+        if (!dataStore.isMultiEnabled(clientId)) {
             writeError("ERR EXEC without MULTI", out);
             return;
         }
 
         dataStore.disableMulti(clientId);
 
-        if(!dataStore.hasQueuedCommand(clientId)) {
+        if (!dataStore.hasQueuedCommand(clientId)) {
             writeArray(0, out);
             return;
         }
 
         writeArray(dataStore.getQueuedCommandSize(clientId), out);
-        while (dataStore.hasQueuedCommand(clientId)){
+        while (dataStore.hasQueuedCommand(clientId)) {
             QueuedCommand queuedCommand = dataStore.pollQueuedCommand(clientId);
             List<String> commandArray = queuedCommand.getCommand();
             OutputStream commandOutPutStream = queuedCommand.getOutputStream();
 
-            if(RedisConstants.SET.equals(commandArray.get(0))) handleSet(clientId, commandArray, commandOutPutStream, serverConfig);
-            if(RedisConstants.GET.equals(commandArray.get(0))) handleGet(clientId, commandArray, commandOutPutStream, serverConfig);
-            if(RedisConstants.INCR.equals(commandArray.get(0))) handleIncr(clientId, commandArray, commandOutPutStream);
+            if (RedisConstants.SET.equals(commandArray.get(0)))
+                handleSet(clientId, commandArray, commandOutPutStream, serverConfig);
+            if (RedisConstants.GET.equals(commandArray.get(0)))
+                handleGet(clientId, commandArray, commandOutPutStream, serverConfig);
+            if (RedisConstants.INCR.equals(commandArray.get(0)))
+                handleIncr(clientId, commandArray, commandOutPutStream);
         }
     }
 
@@ -478,7 +481,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(!dataStore.hasQueuedCommand(clientId)) {
+        if (!dataStore.hasQueuedCommand(clientId)) {
             writeError("ERR DISCARD without MULTI", out);
             return;
         }
@@ -493,7 +496,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(serverConfig.isReplica()) writeBulkString("role:slave", out);
+        if (serverConfig.isReplica()) writeBulkString("role:slave", out);
         else {
             writeBulkString("role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb", out);
         }
@@ -510,10 +513,10 @@ public class CommandHandlers {
 
         System.out.println("Handling REPLCONF command: " + arg1 + " " + arg2);
 
-        if(RedisConstants.LISTENING_PORT.equals(arg1)){
+        if (RedisConstants.LISTENING_PORT.equals(arg1)) {
             serverConfig.addReplica(out, Integer.parseInt(arg2));
         }
-        if(serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
+        if (serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
             System.out.println("REPLCONF getack: ");
             writeArray(3, out);
             writeBulkString("REPLCONF", out);
@@ -533,7 +536,7 @@ public class CommandHandlers {
         String replId = command.get(1);
         String replOffset = command.get(2);
 
-        if("?".equals(replId)) {
+        if ("?".equals(replId)) {
             writeSimpleString("FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0", out);
 
             byte[] rdbFileBytes = Base64.getDecoder().decode("UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");

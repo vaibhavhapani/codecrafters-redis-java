@@ -162,10 +162,9 @@ public class ReplicaConnectionManager {
                 while (!masterSocket.isClosed()) {
                     try {
                         // Parse incoming RESP command from master
-                        String arrayLine = RespProtocol.readLineFromInputStream(masterInputStream);
-                        List<String> command = RespProtocol.parseRespArray(arrayLine, new BufferedReader(new InputStreamReader(masterInputStream)));
+                        List<String> command = RespProtocol.parseRespArrayFromInputStream(masterInputStream);
 
-                        if (!command.isEmpty()) {
+                        if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
 
                             String replicationClientId = "replication-" + System.currentTimeMillis();
