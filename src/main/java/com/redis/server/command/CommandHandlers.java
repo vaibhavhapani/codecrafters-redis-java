@@ -17,14 +17,16 @@ public class CommandHandlers {
 
     private final DataStore dataStore;
     private final BlockingOperationsManager blockingManager;
+    private final ServerConfig serverConfig;
 
-    public CommandHandlers(DataStore dataStore, BlockingOperationsManager blockingManager) {
+    public CommandHandlers(DataStore dataStore, BlockingOperationsManager blockingManager, ServerConfig serverConfig) {
         this.dataStore = dataStore;
         this.blockingManager = blockingManager;
+        this.serverConfig = serverConfig;
     }
 
     public void handlePing(List<String> command, OutputStream out) throws IOException {
-        writeSimpleString(RedisConstants.PONG, out);
+        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
     }
 
     public void handleEcho(List<String> command, OutputStream out) throws IOException {
@@ -47,7 +49,7 @@ public class CommandHandlers {
         writeSimpleString(keyType, out);
     }
 
-    public void handleSet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
+    public void handleSet(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'SET' command", out);
             return;
@@ -85,7 +87,7 @@ public class CommandHandlers {
         if (serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
     }
 
-    public void handleGet(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
+    public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'GET' command", out);
             return;
@@ -442,7 +444,7 @@ public class CommandHandlers {
         writeSimpleString("OK", out);
     }
 
-    public void handleExec(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
+    public void handleExec(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'EXEC' command", out);
             return;
@@ -490,7 +492,7 @@ public class CommandHandlers {
         writeSimpleString("OK", out);
     }
 
-    public void handleInfo(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
+    public void handleInfo(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INFO' command", out);
             return;
@@ -502,7 +504,7 @@ public class CommandHandlers {
         }
     }
 
-    public void handleReplconf(String clientId, List<String> command, OutputStream out, ServerConfig serverConfig) throws IOException {
+    public void handleReplconf(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'REPLCONF' command", out);
             return;
@@ -519,7 +521,6 @@ public class CommandHandlers {
         if (serverConfig.isReplica() && RedisConstants.GETACK.equals(arg1)) {
             String offset = String.valueOf(serverConfig.getReplicaOffset());
 
-            System.out.println("REPLCONF getack: ");
             writeArray(3, out);
             writeBulkString("REPLCONF", out);
             writeBulkString("ACK", out);

@@ -171,6 +171,7 @@ public class ReplicaConnectionManager {
                             if(!RedisConstants.REPLCONF.equals(command.get(0)) || !RedisConstants.GETACK.equals(command.get(1))){
                                 int bytes = calculateRespCommandBytes(command);
                                 serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+                                System.out.println("Current offset: " + serverConfig.getReplicaOffset());
                             }
 
                             String replicationClientId = "replication-" + System.currentTimeMillis();

@@ -19,7 +19,7 @@ public class CommandProcessor {
     public CommandProcessor(ServerConfig serverConfig, DataStore dataStore, BlockingOperationsManager blockingManager) {
         this.serverConfig = serverConfig;
         this.dataStore = dataStore;
-        this.handlers = new CommandHandlers(dataStore, blockingManager);
+        this.handlers = new CommandHandlers(dataStore, blockingManager, serverConfig);
     }
 
     public void processCommand(String clientId, List<String> command, OutputStream out) throws IOException {
@@ -36,10 +36,10 @@ public class CommandProcessor {
                 handlers.handleType(command, out);
                 break;
             case RedisConstants.SET:
-                handlers.handleSet(clientId, command, out, serverConfig);
+                handlers.handleSet(clientId, command, out);
                 break;
             case RedisConstants.GET:
-                handlers.handleGet(clientId, command, out, serverConfig);
+                handlers.handleGet(clientId, command, out);
                 break;
             case RedisConstants.RPUSH:
                 handlers.handleRPush(command, out);
@@ -75,16 +75,16 @@ public class CommandProcessor {
                 handlers.handleMulti(clientId, command, out);
                 break;
             case RedisConstants.EXEC:
-                handlers.handleExec(clientId, command, out, serverConfig);
+                handlers.handleExec(clientId, command, out);
                 break;
             case RedisConstants.DISCARD:
                 handlers.handleDiscard(clientId, command, out);
                 break;
             case RedisConstants.INFO:
-                handlers.handleInfo(clientId, command, out, serverConfig);
+                handlers.handleInfo(clientId, command, out);
                 break;
             case RedisConstants.REPLCONF:
-                handlers.handleReplconf(clientId, command, out, serverConfig);
+                handlers.handleReplconf(clientId, command, out);
                 break;
             case RedisConstants.PSYNC:
                 handlers.handlePsync(clientId, command, out);
