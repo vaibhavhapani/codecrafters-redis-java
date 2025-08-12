@@ -568,10 +568,6 @@ public class CommandHandlers {
             return;
         }
 
-        if(!serverConfig.hasReplicas()) {
-            System.out.println("wait: " + serverConfig.getReplicaCount());
-            writeInteger(serverConfig.getReplicaCount(), out);
-        }
-        System.out.println("wait2: " + serverConfig.getReplicaCount());
+        writeInteger(serverConfig.getReplicaCount(), out);
     }
 }
