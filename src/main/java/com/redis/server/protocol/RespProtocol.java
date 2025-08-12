@@ -115,4 +115,50 @@ public class RespProtocol {
         return sb.toString();
     }
 
+//    public static List<String> parseRespArrayFromInputStream(InputStream inputStream) throws IOException {
+//        String firstLine = readLineFromInputStream(inputStream);
+//        if (firstLine == null) {
+//            return null;
+//        }
+//
+//        if (!firstLine.startsWith("*")) {
+//            throw new IOException("Unexpected RESP array, got: " + firstLine);
+//        }
+//
+//        int arrayLength = Integer.parseInt(firstLine.substring(1));
+//        List<String> result = new ArrayList<>();
+//
+//        for (int i = 0; i < arrayLength; i++) {
+//            String lengthLine = readLineFromInputStream(inputStream);
+//            if (lengthLine == null || !lengthLine.startsWith("$")) {
+//                throw new IOException("Expected bulk string length, got: " + lengthLine);
+//            }
+//
+//            int stringLength = Integer.parseInt(lengthLine.substring(1));
+//            if (stringLength == -1) {
+//                result.add(null);
+//            } else {
+//                byte[] data = new byte[stringLength];
+//                int totalRead = 0;
+//                while (totalRead < stringLength) {
+//                    int bytesRead = inputStream.read(data, totalRead, stringLength - totalRead);
+//                    if (bytesRead == -1) {
+//                        throw new IOException("Unexpected end of stream while reading bulk string");
+//                    }
+//                    totalRead += bytesRead;
+//                }
+//
+//                int cr = inputStream.read();
+//                int lf = inputStream.read();
+//                if (cr != '\r' || lf != '\n') {
+//                    throw new IOException("Expected \\r\\n after bulk string data");
+//                }
+//
+//                result.add(new String(data));
+//            }
+//        }
+//
+//        return result;
+//    }
+
 }

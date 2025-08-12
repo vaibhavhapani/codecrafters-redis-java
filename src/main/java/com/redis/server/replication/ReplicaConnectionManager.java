@@ -15,7 +15,6 @@ public class ReplicaConnectionManager {
     private final CommandProcessor commandProcessor;
     private Socket masterSocket;
     private OutputStream masterOutput;
-    private BufferedReader masterInput;
     private InputStream masterInputStream;
 
     public ReplicaConnectionManager(ServerConfig serverConfig, CommandProcessor commandProcessor) {
@@ -31,7 +30,6 @@ public class ReplicaConnectionManager {
             masterSocket = new Socket(serverConfig.getMasterHost(), serverConfig.getMasterPort());
             masterOutput = masterSocket.getOutputStream();
             masterInputStream = masterSocket.getInputStream();
-            masterInput = new BufferedReader(new InputStreamReader(masterInputStream));
 
             System.out.println("Connected to master successfully");
 
@@ -66,7 +64,7 @@ public class ReplicaConnectionManager {
         System.out.println("PING sent to master");
 
         try {
-            String response = masterInput.readLine();
+            String response = RespProtocol.readLineFromInputStream(masterInputStream);
             if (response != null) {
                 System.out.println("Received response from master: " + response);
 
@@ -91,7 +89,7 @@ public class ReplicaConnectionManager {
 
         System.out.println("REPLCONF listening-port sent: " + command.replace("\r\n", "\\r\\n"));
 
-        String response = masterInput.readLine();
+        String response = RespProtocol.readLineFromInputStream(masterInputStream);
         if (response != null) {
             System.out.println("Received REPLCONF listening-port response: " + response);
             if (!"+OK".equals(response)) {
@@ -108,7 +106,7 @@ public class ReplicaConnectionManager {
 
         System.out.println("REPLCONF capa sent: " + command.replace("\r\n", "\\r\\n"));
 
-        String response = masterInput.readLine();
+        String response = RespProtocol.readLineFromInputStream(masterInputStream);
         if (response != null) {
             System.out.println("Received REPLCONF capa response: " + response);
             if (!"+OK".equals(response)) {
@@ -124,7 +122,6 @@ public class ReplicaConnectionManager {
         masterOutput.write(command.getBytes());
         System.out.println("PSYNC sent: " + command.replace("\r\n", "\\r\\n"));
 
-        // Use InputStream consistently
         String response = RespProtocol.readLineFromInputStream(masterInputStream);
         if (response != null) {
             System.out.println("Received PSYNC response: " + response);
@@ -132,6 +129,7 @@ public class ReplicaConnectionManager {
             if (response.startsWith("+FULLRESYNC")) {
                 System.out.println("Full resync initiated, reading RDB file...");
                 skipRDBFile();
+
                 System.out.println("Starting command listener for propagated commands...");
                 startCommandListener();
             }
@@ -139,41 +137,10 @@ public class ReplicaConnectionManager {
     }
 
     private void skipRDBFile() throws IOException {
-        System.out.println("hello1: about to read from masterInputStream");
-        StringBuilder sb = new StringBuilder();
-        int b;
-        int bytesRead = 0;
-        while ((b = masterInputStream.read()) != -1) {
-            bytesRead++;
-            System.out.println("Read byte " + bytesRead + ": '" + (char)b + "' (ASCII: " + b + ")");
-            if (b == '\r') {
-                int next = masterInputStream.read();
-                if (next == -1) {
-                    System.out.println("Got \\r but next byte is EOF!");
-                    break;
-                }
-                bytesRead++;
-                System.out.println("Read byte " + bytesRead + ": '" + (char)next + "' (ASCII: " + next + ")");
-                if (next == '\n') {
-                    System.out.println("Found \\r\\n, breaking with sb = '" + sb.toString() + "'");
-                    break;
-                }
-                sb.append((char)b).append((char)next);
-            } else {
-                sb.append((char)b);
-            }
-        }
-
-        if (b == -1) {
-            System.out.println("Stream ended unexpectedly after " + bytesRead + " bytes");
-        }
-        String lengthLine = sb.toString();
-        System.out.println("hello2: lengthLine = '" + lengthLine + "'");
-
-        System.out.println("hello2: ");
+        String lengthLine = RespProtocol.readLineFromInputStream(masterInputStream);
+        System.out.println("RDB length line: '" + lengthLine + "'");
 
         if (lengthLine.startsWith("$")) {
-            System.out.println("hello3:  ");
             int rdbLength = Integer.parseInt(lengthLine.substring(1));
             System.out.println("RDB file length: " + rdbLength + " bytes");
 
@@ -197,7 +164,8 @@ public class ReplicaConnectionManager {
                 while (!masterSocket.isClosed()) {
                     try {
                         // Parse incoming RESP command from master
-                        List<String> command = RespProtocol.parseRespArray(masterInput.readLine(), masterInput);
+                        String arrayLine = RespProtocol.readLineFromInputStream(masterInputStream);
+                        List<String> command = RespProtocol.parseRespArray(arrayLine, new BufferedReader(new InputStreamReader(masterInputStream)));
 
                         if (command != null && !command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
