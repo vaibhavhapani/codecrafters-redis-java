@@ -168,12 +168,6 @@ public class ReplicaConnectionManager {
                         if (!command.isEmpty()) {
                             System.out.println("Received propagated command: " + command);
 
-                            if(!RedisConstants.REPLCONF.equals(command.get(0)) || !RedisConstants.GETACK.equals(command.get(1))){
-                                int bytes = calculateRespCommandBytes(command);
-                                serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
-                                System.out.println("Current offset: " + serverConfig.getReplicaOffset());
-                            }
-
                             String replicationClientId = "replication-" + System.currentTimeMillis();
                             commandProcessor.processCommand(replicationClientId, command, masterOutput);
                         }
@@ -188,28 +182,5 @@ public class ReplicaConnectionManager {
             }
         }).start();
     }
-
-    private int calculateRespCommandBytes(List<String> command) {
-        int totalBytes = 0;
-
-        // Array header: *<count>\r\n
-        String arrayCount = String.valueOf(command.size());
-        totalBytes += 1 + arrayCount.length() + 2; // "*" + count + "\r\n"
-
-        // Each bulk string: $<length>\r\n<data>\r\n
-        for (String arg : command) {
-            if (arg == null) {
-                totalBytes += 5; // "$-1\r\n"
-            } else {
-                String lengthStr = String.valueOf(arg.length());
-                totalBytes += 1 + lengthStr.length() + 2; // "$" + length + "\r\n"
-                totalBytes += arg.length() + 2; // data + "\r\n"
-            }
-        }
-
-        System.out.println("Command " + command + " uses " + totalBytes + " bytes");
-        return totalBytes;
-    }
-
 }
 

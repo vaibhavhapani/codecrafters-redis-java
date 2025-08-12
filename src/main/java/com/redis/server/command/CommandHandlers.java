@@ -27,6 +27,10 @@ public class CommandHandlers {
 
     public void handlePing(List<String> command, OutputStream out) throws IOException {
         if(serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
+        else {
+            int bytes = RespProtocol.calculateRespCommandBytes(command);
+            serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+        }
     }
 
     public void handleEcho(List<String> command, OutputStream out) throws IOException {
@@ -84,7 +88,11 @@ public class CommandHandlers {
 
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
 
-        if (serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
+        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.OK, out);
+        else {
+            int bytes = RespProtocol.calculateRespCommandBytes(command);
+            serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+        }
     }
 
     public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
@@ -525,6 +533,10 @@ public class CommandHandlers {
             writeBulkString("REPLCONF", out);
             writeBulkString("ACK", out);
             writeBulkString(offset, out);
+
+            int bytes = RespProtocol.calculateRespCommandBytes(command);
+            serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+
             return;
         }
         writeSimpleString("OK", out);
