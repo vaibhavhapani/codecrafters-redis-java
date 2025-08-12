@@ -555,6 +555,7 @@ public class CommandHandlers {
                 if(receivedReplicaOffset == serverConfig.getMasterOffset()){
                     serverConfig.setUpToDateReplicas(serverConfig.getUpToDateReplicas() + 1);
                 }
+                System.out.println("up to date: " + serverConfig.getUpToDateReplicas());
                 break;
         }
 
