@@ -580,10 +580,26 @@ public class CommandHandlers {
         }
     }
 
-    public void handleWait(String clientId, List<String> command, OutputStream out) throws IOException {
+    public void handleWait(String clientId, List<String> command, OutputStream out) throws IOException, InterruptedException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'WAIT' command", out);
             return;
+        }
+
+        out.write("*3\r\n$8\r\nREPLCONF\r\n$3\r\nGETACK\r\n$1\r\n0\r\n".getBytes());
+        Thread.sleep(1);
+
+        int minimumUpToDateReplica = Integer.parseInt(command.get(1));
+        long duration = Long.parseLong(command.get(2));
+
+        long currTime = System.currentTimeMillis();
+
+        while(System.currentTimeMillis() < currTime + duration) {
+            if(serverConfig.getUpToDateReplicas() >= minimumUpToDateReplica) {
+                System.out.println("wait res sent: " + serverConfig.getUpToDateReplicas());
+                writeInteger(serverConfig.getUpToDateReplicas(), out);
+                return;
+            }
         }
 
         writeInteger(serverConfig.getUpToDateReplicas(), out);
