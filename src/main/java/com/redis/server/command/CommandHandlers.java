@@ -110,7 +110,7 @@ public class CommandHandlers {
         String key = command.get(1);
         String value = dataStore.getValue(key);
 
-        System.out.println("Replica? " + serverConfig.isReplica() + " value: " + value);
+        //System.out.println("Replica? " + serverConfig.isReplica() + " value: " + value);
         writeBulkString(value, out);
     }
 
@@ -568,6 +568,6 @@ public class CommandHandlers {
             return;
         }
 
-        if(!serverConfig.hasReplicas()) writeInteger(0, out);
+        if(!serverConfig.hasReplicas()) writeInteger(serverConfig.getReplicaCount(), out);
     }
 }
