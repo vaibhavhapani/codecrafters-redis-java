@@ -547,6 +547,7 @@ public class CommandHandlers {
 
                 int bytes = RespProtocol.calculateRespCommandBytes(command);
                 serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+                System.out.println("getack: " + command + " replica offset: " + serverConfig.getReplicaOffset());
                 break;
 
             case RedisConstants.ACK:
