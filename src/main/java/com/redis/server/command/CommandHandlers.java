@@ -469,9 +469,9 @@ public class CommandHandlers {
             OutputStream commandOutPutStream = queuedCommand.getOutputStream();
 
             if (RedisConstants.SET.equals(commandArray.get(0)))
-                handleSet(clientId, commandArray, commandOutPutStream, serverConfig);
+                handleSet(clientId, commandArray, commandOutPutStream);
             if (RedisConstants.GET.equals(commandArray.get(0)))
-                handleGet(clientId, commandArray, commandOutPutStream, serverConfig);
+                handleGet(clientId, commandArray, commandOutPutStream);
             if (RedisConstants.INCR.equals(commandArray.get(0)))
                 handleIncr(clientId, commandArray, commandOutPutStream);
         }
