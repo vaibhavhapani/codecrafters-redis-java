@@ -597,6 +597,7 @@ public class CommandHandlers {
         }
 
         serverConfig.setUpToDateReplicas(0);
+        serverConfig.getAck();
 
         int minimumUpToDateReplica = Integer.parseInt(command.get(1));
         long duration = Long.parseLong(command.get(2));
@@ -605,7 +606,6 @@ public class CommandHandlers {
         long endTime = startTime + duration;
 
         while(System.currentTimeMillis() < endTime) {
-            serverConfig.getAck();
             if(serverConfig.getUpToDateReplicas() >= minimumUpToDateReplica) {
                 System.out.println("wait res sent: " + serverConfig.getUpToDateReplicas());
                 writeInteger(serverConfig.getUpToDateReplicas(), out);
