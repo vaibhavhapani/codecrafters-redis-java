@@ -26,11 +26,8 @@ public class CommandHandlers {
     }
 
     public void handlePing(List<String> command, OutputStream out) throws IOException {
-        if(serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
-        else {
-            int bytes = RespProtocol.calculateRespCommandBytes(command);
-            serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
-        }
+        if (serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
+        else serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + RedisConstants.PING_COMMAND_BYTE_SIZE);
     }
 
     public void handleEcho(List<String> command, OutputStream out) throws IOException {
@@ -89,12 +86,11 @@ public class CommandHandlers {
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
         int bytes = RespProtocol.calculateRespCommandBytes(command);
 
-        if(serverConfig.isMaster()) {
+        if (serverConfig.isMaster()) {
             serverConfig.setMasterOffset(serverConfig.getMasterOffset() + bytes);
             System.out.println("master offset: " + serverConfig.getMasterOffset());
             writeSimpleString(RedisConstants.OK, out);
-        }
-        else {
+        } else {
             serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
         }
     }
@@ -545,8 +541,7 @@ public class CommandHandlers {
                 writeBulkString("ACK", out);
                 writeBulkString(offset, out);
 
-                int bytes = RespProtocol.calculateRespCommandBytes(command);
-                serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + bytes);
+                serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + RedisConstants.GETACK_COMMAND_BYTE_SIZE);
                 System.out.println("getack: " + command + " replica offset: " + serverConfig.getReplicaOffset());
                 break;
 
@@ -554,7 +549,7 @@ public class CommandHandlers {
                 System.out.println("Received ACK from replica");
                 int receivedReplicaOffset = Integer.parseInt(arg2);
 
-                if(receivedReplicaOffset >= serverConfig.getMasterOffset()){
+                if (receivedReplicaOffset >= serverConfig.getMasterOffset()) {
                     serverConfig.setUpToDateReplicas(serverConfig.getUpToDateReplicas() + 1);
                 }
 
@@ -591,8 +586,13 @@ public class CommandHandlers {
             return;
         }
 
-        if(!serverConfig.hasReplicas()){
+        if (!serverConfig.hasReplicas()) {
             writeInteger(0, out);
+            return;
+        }
+
+        if(serverConfig.isFresh()) {
+            writeInteger(serverConfig.getReplicaCount(), out);
             return;
         }
 
@@ -605,8 +605,8 @@ public class CommandHandlers {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + duration;
 
-        while(System.currentTimeMillis() < endTime) {
-            if(serverConfig.getUpToDateReplicas() >= minimumUpToDateReplica) {
+        while (System.currentTimeMillis() < endTime) {
+            if (serverConfig.getUpToDateReplicas() >= minimumUpToDateReplica) {
                 System.out.println("wait res sent: " + serverConfig.getUpToDateReplicas());
                 writeInteger(serverConfig.getUpToDateReplicas(), out);
                 return;

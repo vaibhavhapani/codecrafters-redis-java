@@ -82,6 +82,10 @@ public class ServerConfig {
         return upToDateReplicas;
     }
 
+    public boolean isFresh(){
+        return masterOffset == 0;
+    }
+
     public void getAck() throws IOException {
         for(OutputStream out: replicas.keySet()){
             writeArray(3, out);
