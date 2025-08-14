@@ -150,6 +150,10 @@ public class DataStore {
         return zsets.get(key).getMembersInRange(start, end);
     }
 
+    public int getZsetMemberCount(String Key) {
+        return !zsets.containsKey(Key) ? 0 : zsets.get(Key).size();
+    }
+
     public boolean hasZsetKey(String key) {
         return zsets.containsKey(key);
     }

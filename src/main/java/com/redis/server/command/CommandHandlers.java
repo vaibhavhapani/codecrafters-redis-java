@@ -665,4 +665,16 @@ public class CommandHandlers {
         writeArray(members.size(), out);
         for(String s: members) writeBulkString(s, out);
     }
+
+    public void handleZcard(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZCARD' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        int cardinality = dataStore.getZsetMemberCount(zsetKey);
+
+        writeInteger(cardinality, out);
+    }
 }
