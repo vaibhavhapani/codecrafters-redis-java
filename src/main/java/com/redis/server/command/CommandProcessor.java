@@ -104,6 +104,9 @@ public class CommandProcessor {
             case RedisConstants.ZCARD:
                 handlers.handleZcard(command, out);
                 break;
+            case RedisConstants.ZSCORE:
+                handlers.handleZscore(command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

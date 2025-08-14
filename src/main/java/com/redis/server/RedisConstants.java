@@ -55,6 +55,7 @@ public class RedisConstants {
     public static final String ZRANK = "ZRANK";
     public static final String ZRANGE = "ZRANGE";
     public static final String ZCARD = "ZCARD";
+    public static final String ZSCORE = "ZSCORE";
 
     // Response messages
     public static final String PONG = "PONG";

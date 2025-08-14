@@ -55,6 +55,10 @@ public class RedisSortedSet {
         return res;
     }
 
+    public Double getScore(String member) {
+        return members.get(member);
+    }
+
     public boolean containsMember(SortedSetMember member) {
         return sortedMembers.contains(member);
     }

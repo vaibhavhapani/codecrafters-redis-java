@@ -677,4 +677,17 @@ public class CommandHandlers {
 
         writeInteger(cardinality, out);
     }
+
+    public void handleZscore(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZSCORE' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        String member = command.get(2);
+        double score = dataStore.getZsetMemberScore(zsetKey, member);
+
+        writeBulkString(String.valueOf(score), out);
+    }
 }
