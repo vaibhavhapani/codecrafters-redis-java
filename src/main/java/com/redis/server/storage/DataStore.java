@@ -140,8 +140,8 @@ public class DataStore {
         return zsets.get(key).addMember(member);
     }
 
-    public double getZsetMemberScore(String Key, String member) {
-        return !zsets.containsKey(Key) ? -1 : zsets.get(Key).getScore(member);
+    public double getZsetMemberScore(String key, String member) {
+        return !zsets.containsKey(key) ? -1 : zsets.get(key).getScore(member);
     }
 
     public int getZsetMemberRank(String key, String member) {
@@ -154,8 +154,12 @@ public class DataStore {
         return zsets.get(key).getMembersInRange(start, end);
     }
 
-    public int getZsetMemberCount(String Key) {
-        return !zsets.containsKey(Key) ? 0 : zsets.get(Key).size();
+    public int removeZsetMember(String key, String member){
+        return !zsets.containsKey(key) ? 0 : zsets.get(key).remove(member);
+    }
+
+    public int getZsetMemberCount(String key) {
+        return !zsets.containsKey(key) ? 0 : zsets.get(key).size();
     }
 
     public boolean hasZsetKey(String key) {

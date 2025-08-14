@@ -690,4 +690,17 @@ public class CommandHandlers {
 
         writeBulkString(String.valueOf(score), out);
     }
+
+    public void handleZrem(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZREM' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        String member = command.get(2);
+        int res = dataStore.removeZsetMember(zsetKey, member);
+
+        writeInteger(res, out);
+    }
 }

@@ -47,7 +47,6 @@ public class RedisSortedSet {
 
         int i = 0;
         for(SortedSetMember it: sortedMembers){
-            System.out.println(i);
             if(i >= start && i <= end) res.add(it.getMemberName());
             i++;
         }
@@ -65,6 +64,15 @@ public class RedisSortedSet {
 
     public int size() {
         return sortedMembers.size();
+    }
+
+    public int remove(String member) {
+        if(!members.containsKey(member)) return 0;
+
+        double score = members.get(member);
+        sortedMembers.remove(new SortedSetMember(member, score));
+        members.remove(member);
+        return 1;
     }
 
     public boolean isEmpty() {
