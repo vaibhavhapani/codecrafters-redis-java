@@ -69,4 +69,5 @@ public class RedisConstants {
     // Error messages
     public static final String ERR_UNKNOWN_COMMAND = "ERR unknown command";
     public static final String ERR_WRONG_NUMBER_ARGS = "ERR wrong number of arguments for";
+    public static final String ERR_CAN_NOT_EXECUTE = "ERR Can't execute";
 }

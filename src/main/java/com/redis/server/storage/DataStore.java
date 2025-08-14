@@ -8,7 +8,6 @@ import com.redis.server.model.SortedSetMember;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 public class DataStore {
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
@@ -19,6 +18,17 @@ public class DataStore {
     private final ConcurrentHashMap<String, Queue<QueuedCommand>> clientQueuedCommands = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RedisSortedSet> zsets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Integer> sub = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Boolean> clientSubStates = new ConcurrentHashMap<>();
+    private final HashSet<String> allowedCommandsInSubMode = new HashSet<>() {
+        {
+            add("SUBSCRIBE");
+            add("UNSUBSCRIBE");
+            add("PSUBSCRIBE");
+            add("PUNSUBSCRIBE");
+            add("PING");
+            add("QUIT");
+        }
+    };
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -174,5 +184,21 @@ public class DataStore {
 
     public int getSubCount(String channel){
         return sub.get(channel);
+    }
+
+    public boolean isClientSubscribed(String clientID) {
+        return clientSubStates.getOrDefault(clientID, false);
+    }
+
+    public void subscribeClient(String clientId) {
+        clientSubStates.put(clientId, true);
+    }
+
+    public void unsubscribeClient(String clientId) {
+        clientSubStates.put(clientId, false);
+    }
+
+    public boolean isAllowedInSubMode(String command){
+        return allowedCommandsInSubMode.contains(command);
     }
 }

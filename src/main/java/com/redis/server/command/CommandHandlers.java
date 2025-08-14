@@ -56,6 +56,11 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isClientSubscribed(clientId)) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'SET' command in subscribed mode", out);
+            return;
+        }
+
         // propagate command to replicas
         if (serverConfig.hasReplicas()) {
             List<OutputStream> replicas = serverConfig.getReplicaOutputStreams();
@@ -99,6 +104,11 @@ public class CommandHandlers {
     public void handleGet(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'GET' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId)) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'GET' command in subscribed mode", out);
             return;
         }
 
@@ -704,11 +714,13 @@ public class CommandHandlers {
         writeInteger(res, out);
     }
 
-    public void handleSubscribe(List<String> command, OutputStream out) throws IOException {
+    public void handleSubscribe(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'SUBSCRIBE' command", out);
             return;
         }
+
+        if(!dataStore.isClientSubscribed(clientId)) dataStore.subscribeClient(clientId);
 
         String channel = command.get(1);
         dataStore.addChannel(channel);

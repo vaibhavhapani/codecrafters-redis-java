@@ -111,7 +111,7 @@ public class CommandProcessor {
                 handlers.handleZrem(command, out);
                 break;
             case RedisConstants.SUBSCRIBE:
-                handlers.handleSubscribe(command, out);
+                handlers.handleSubscribe(clientId, command, out);
                 break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
