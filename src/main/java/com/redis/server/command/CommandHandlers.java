@@ -56,6 +56,7 @@ public class CommandHandlers {
             return;
         }
 
+        // propagate command to replicas
         if (serverConfig.hasReplicas()) {
             List<OutputStream> replicas = serverConfig.getReplicaOutputStreams();
 
