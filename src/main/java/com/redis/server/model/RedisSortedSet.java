@@ -7,28 +7,39 @@ import java.util.TreeSet;
 
 public class RedisSortedSet {
     private final TreeSet<SortedSetMember> sortedMembers;
-    private final Map<String, Double> memberToScore;
+    private final Map<String, Double> members;
 
     public RedisSortedSet() {
         this.sortedMembers = new TreeSet<>();
-        this.memberToScore = new HashMap<>();
+        this.members = new HashMap<>();
     }
 
     public int addMember(SortedSetMember member) {
-        Double existingScore = memberToScore.get(member.getMemberName());
+        Double existingScore = members.get(member.getMemberName());
 
         if (existingScore != null) {
             // Member exists, remove old entry and add new one with updated score
             sortedMembers.remove(new SortedSetMember(member.getMemberName(), existingScore));
             sortedMembers.add(member);
-            memberToScore.put(member.getMemberName(), member.getScore());
+            members.put(member.getMemberName(), member.getScore());
             return 0; // Existing member updated
         } else {
             // New member
             sortedMembers.add(member);
-            memberToScore.put(member.getMemberName(), member.getScore());
+            members.put(member.getMemberName(), member.getScore());
             return 1; // New member added
         }
+    }
+
+    public int getRank(String member) {
+        if(!members.containsKey(member)) return -1;
+
+        int i = 0;
+        for(SortedSetMember it: sortedMembers){
+            if(it.getMemberName().equals(member)) return i;
+            i++;
+        }
+        return 0;
     }
 
     public boolean containsMember(SortedSetMember member) {

@@ -95,6 +95,9 @@ public class CommandProcessor {
             case RedisConstants.ZADD:
                 handlers.handleZadd(command, out);
                 break;
+            case RedisConstants.ZRANK:
+                handlers.handleZrank(command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

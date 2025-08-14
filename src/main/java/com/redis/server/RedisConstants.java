@@ -52,6 +52,7 @@ public class RedisConstants {
     public static final int PING_COMMAND_BYTE_SIZE = 14;
     // Sorted Sets
     public static final String ZADD = "ZADD";
+    public static final String ZRANK = "ZRANK";
 
     // Response messages
     public static final String PONG = "PONG";

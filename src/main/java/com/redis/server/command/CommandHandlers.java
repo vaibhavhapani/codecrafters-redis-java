@@ -630,4 +630,23 @@ public class CommandHandlers {
         int res = dataStore.addZsetMember(zsetKey, new SortedSetMember(zsetMember, score));
         writeInteger(res, out);
     }
+
+    public void handleZrank(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZRANK' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        String zsetMember = command.get(2);
+
+        int rank = dataStore.getZsetMemberRank(zsetKey, zsetMember);
+
+        if(rank == -1) {
+            writeNullBulkString(out);
+            return;
+        }
+
+        writeInteger(rank, out);
+    }
 }

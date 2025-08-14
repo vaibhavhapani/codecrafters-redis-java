@@ -143,6 +143,11 @@ public class DataStore {
         return zsets.get(key).addMember(member);
     }
 
+    public int getZsetMemberRank(String key, String member) {
+        if(!zsets.containsKey(key)) return -1;
+        return zsets.get(key).getRank(member);
+    }
+
     public boolean hasZsetKey(String key) {
         return zsets.containsKey(key);
     }
