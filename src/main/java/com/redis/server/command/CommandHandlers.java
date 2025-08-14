@@ -62,7 +62,7 @@ public class CommandHandlers {
 
             for (OutputStream replicaOutputStream : replicas) {
                 writeArray(command.size(), replicaOutputStream);
-                for (String arg : command) writeSimpleString(arg, replicaOutputStream);
+                for (String arg : command) writeBulkString(arg, replicaOutputStream);
             }
         }
 
