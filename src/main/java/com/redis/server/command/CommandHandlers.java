@@ -712,7 +712,7 @@ public class CommandHandlers {
 
         String channel = command.get(1);
         dataStore.addChannel(channel);
-        int count = dataStore.getSubCount();
+        int count = dataStore.getSubCount(channel);
 
         writeArray(3, out);
         writeBulkString(RedisConstants.SUBSCRIBE.toLowerCase(), out);
