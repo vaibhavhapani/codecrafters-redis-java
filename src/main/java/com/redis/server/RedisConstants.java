@@ -50,6 +50,8 @@ public class RedisConstants {
     public static final String WAIT = "WAIT";
     public static final int GETACK_COMMAND_BYTE_SIZE = 37;
     public static final int PING_COMMAND_BYTE_SIZE = 14;
+    // Sorted Sets
+    public static final String ZADD = "ZADD";
 
     // Response messages
     public static final String PONG = "PONG";

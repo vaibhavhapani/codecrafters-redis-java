@@ -311,7 +311,6 @@ public class CommandHandlers {
         dataStore.setStream(streamKey, stream);
 
         blockingManager.notifyBlockedStreamClients(streamKey);
-
         writeBulkString(newEntry.getId(), out);
     }
 
@@ -616,5 +615,19 @@ public class CommandHandlers {
         }
 
         writeInteger(serverConfig.getUpToDateReplicas(), out);
+    }
+
+    public void handleZadd(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 4) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZADD' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        double score = Double.parseDouble(command.get(2));
+        String zsetMember = command.get(2);
+
+        dataStore.addZsetMember(zsetKey, new SortedSetMember(zsetMember, score));
+        writeInteger(1, out);
     }
 }

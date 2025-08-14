@@ -1,13 +1,17 @@
 package com.redis.server.storage;
 
 import com.redis.server.model.QueuedCommand;
+import com.redis.server.model.RedisSortedSet;
 import com.redis.server.model.RedisStream;
+import com.redis.server.model.SortedSetMember;
 
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class DataStore {
     private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
@@ -16,7 +20,7 @@ public class DataStore {
     private final ConcurrentHashMap<String, RedisStream> streams = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> clientMultiStates = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Queue<QueuedCommand>> clientQueuedCommands = new ConcurrentHashMap<>();
-
+    private final ConcurrentHashMap<String, RedisSortedSet> zsets = new ConcurrentHashMap<>();
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -128,5 +132,18 @@ public class DataStore {
     public void cleanupClient(String clientId) {
         clientMultiStates.remove(clientId);
         clientQueuedCommands.remove(clientId);
+    }
+
+    public RedisSortedSet getSortedSet(String key) {
+        return zsets.get(key);
+    }
+
+    public void addZsetMember(String key, SortedSetMember member) {
+        if(!zsets.containsKey(key)) zsets.put(key, new RedisSortedSet());
+        zsets.get(key).addMember(member);
+    }
+
+    public boolean hasZsetKey(String key) {
+        return zsets.containsKey(key);
     }
 }
