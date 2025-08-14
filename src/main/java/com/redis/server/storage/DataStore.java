@@ -138,9 +138,9 @@ public class DataStore {
         return zsets.get(key);
     }
 
-    public void addZsetMember(String key, SortedSetMember member) {
+    public int addZsetMember(String key, SortedSetMember member) {
         if(!zsets.containsKey(key)) zsets.put(key, new RedisSortedSet());
-        zsets.get(key).addMember(member);
+        return zsets.get(key).addMember(member);
     }
 
     public boolean hasZsetKey(String key) {

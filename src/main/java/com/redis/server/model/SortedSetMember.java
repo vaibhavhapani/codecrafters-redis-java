@@ -9,7 +9,7 @@ public class SortedSetMember implements Comparable<SortedSetMember> {
         this.score = score;
     }
 
-    public String getMember() {
+    public String getMemberName() {
         return member;
     }
 

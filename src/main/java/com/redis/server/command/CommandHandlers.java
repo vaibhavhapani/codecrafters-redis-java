@@ -625,9 +625,9 @@ public class CommandHandlers {
 
         String zsetKey = command.get(1);
         double score = Double.parseDouble(command.get(2));
-        String zsetMember = command.get(2);
+        String zsetMember = command.get(3);
 
-        dataStore.addZsetMember(zsetKey, new SortedSetMember(zsetMember, score));
-        writeInteger(1, out);
+        int res = dataStore.addZsetMember(zsetKey, new SortedSetMember(zsetMember, score));
+        writeInteger(res, out);
     }
 }
