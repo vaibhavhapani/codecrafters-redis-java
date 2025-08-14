@@ -703,4 +703,20 @@ public class CommandHandlers {
 
         writeInteger(res, out);
     }
+
+    public void handleSubscribe(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'SUBSCRIBE' command", out);
+            return;
+        }
+
+        String channel = command.get(1);
+        dataStore.addChannel(channel);
+        int count = dataStore.getSubCount();
+
+        writeArray(3, out);
+        writeBulkString(RedisConstants.SUBSCRIBE.toLowerCase(), out);
+        writeBulkString(channel, out);
+        writeInteger(count, out);
+    }
 }

@@ -18,6 +18,7 @@ public class DataStore {
     private final ConcurrentHashMap<String, Boolean> clientMultiStates = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Queue<QueuedCommand>> clientQueuedCommands = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RedisSortedSet> zsets = new ConcurrentHashMap<>();
+    private final List<String> sub = new ArrayList<>();
 
     public void setValue(String key, String value) {
         store.put(key, value);
@@ -164,5 +165,13 @@ public class DataStore {
 
     public boolean hasZsetKey(String key) {
         return zsets.containsKey(key);
+    }
+
+    public void addChannel(String channel){
+        sub.add(channel);
+    }
+
+    public int getSubCount(){
+        return sub.size();
     }
 }
