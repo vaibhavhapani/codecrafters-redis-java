@@ -1,9 +1,6 @@
 package com.redis.server.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class RedisSortedSet {
     private final TreeSet<SortedSetMember> sortedMembers;
@@ -40,6 +37,20 @@ public class RedisSortedSet {
             i++;
         }
         return 0;
+    }
+
+    public List<String> getMembersInRange(int start, int end){
+        List<String> res = new ArrayList<>();
+
+        System.out.println("2: ");
+        int i = 0;
+        for(SortedSetMember it: sortedMembers){
+            System.out.println(i);
+            if(i >= start && i <= end) res.add(it.getMemberName());
+            i++;
+        }
+
+        return res;
     }
 
     public boolean containsMember(SortedSetMember member) {

@@ -6,10 +6,7 @@ import com.redis.server.model.RedisStream;
 import com.redis.server.model.SortedSetMember;
 
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -146,6 +143,11 @@ public class DataStore {
     public int getZsetMemberRank(String key, String member) {
         if(!zsets.containsKey(key)) return -1;
         return zsets.get(key).getRank(member);
+    }
+
+    public List<String> getZsetMembers(String key, int start, int end) {
+        if(!zsets.containsKey(key)) return new ArrayList<>();
+        return zsets.get(key).getMembersInRange(start, end);
     }
 
     public boolean hasZsetKey(String key) {

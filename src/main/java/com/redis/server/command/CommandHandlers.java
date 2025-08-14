@@ -649,4 +649,20 @@ public class CommandHandlers {
 
         writeInteger(rank, out);
     }
+
+    public void handleZrange(List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 4) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZRANGE' command", out);
+            return;
+        }
+
+        String zsetKey = command.get(1);
+        int startIndex = Integer.parseInt(command.get(2));
+        int endIndex = Integer.parseInt(command.get(3));
+
+        List<String> members = dataStore.getZsetMembers(zsetKey, startIndex, endIndex);
+
+        writeArray(members.size(), out);
+        for(String s: members) writeBulkString(s, out);
+    }
 }
