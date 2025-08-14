@@ -30,11 +30,17 @@ public class CommandHandlers {
         else serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + RedisConstants.PING_COMMAND_BYTE_SIZE);
     }
 
-    public void handleEcho(List<String> command, OutputStream out) throws IOException {
+    public void handleEcho(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ECHO' command", out);
             return;
         }
+
+        if(dataStore.isClientSubscribed(clientId)) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ECHO' command in subscribed mode", out);
+            return;
+        }
+
         String arg = command.get(1);
         writeBulkString(arg, out);
     }

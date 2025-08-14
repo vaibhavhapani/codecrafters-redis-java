@@ -30,7 +30,7 @@ public class CommandProcessor {
                 handlers.handlePing(command, out);
                 break;
             case RedisConstants.ECHO:
-                handlers.handleEcho(command, out);
+                handlers.handleEcho(clientId, command, out);
                 break;
             case RedisConstants.TYPE:
                 handlers.handleType(command, out);
