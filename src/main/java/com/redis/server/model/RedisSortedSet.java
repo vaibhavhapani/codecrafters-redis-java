@@ -42,7 +42,9 @@ public class RedisSortedSet {
     public List<String> getMembersInRange(int start, int end){
         List<String> res = new ArrayList<>();
 
-        System.out.println("2: ");
+        if(start < 0) start = members.size() + start;
+        if(end < 0) end = members.size() + end;
+
         int i = 0;
         for(SortedSetMember it: sortedMembers){
             System.out.println(i);
