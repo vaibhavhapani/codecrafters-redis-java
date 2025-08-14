@@ -27,7 +27,7 @@ public class CommandProcessor {
 
         switch (commandName) {
             case RedisConstants.PING:
-                handlers.handlePing(command, out);
+                handlers.handlePing(clientId, command, out);
                 break;
             case RedisConstants.ECHO:
                 handlers.handleEcho(clientId, command, out);

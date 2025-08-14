@@ -25,8 +25,14 @@ public class CommandHandlers {
         this.serverConfig = serverConfig;
     }
 
-    public void handlePing(List<String> command, OutputStream out) throws IOException {
-        if (serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
+    public void handlePing(String clientId, List<String> command, OutputStream out) throws IOException {
+        if(dataStore.isClientSubscribed(clientId)){
+            writeArray(2, out);
+            writeBulkString("pong", out);
+            writeBulkString("", out);
+            return;
+        }
+        else if (serverConfig.isMaster()) writeSimpleString(RedisConstants.PONG, out);
         else serverConfig.setReplicaOffset(serverConfig.getReplicaOffset() + RedisConstants.PING_COMMAND_BYTE_SIZE);
     }
 
