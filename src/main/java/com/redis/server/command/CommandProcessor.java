@@ -116,6 +116,9 @@ public class CommandProcessor {
             case RedisConstants.PUBLISH:
                 handlers.handlePublish(clientId, command, out);
                 break;
+            case RedisConstants.UNSUBSCRIBE:
+                handlers.handleUnsubscribe(clientId, command, out);
+                break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);
                 break;

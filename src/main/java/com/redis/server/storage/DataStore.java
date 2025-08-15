@@ -178,7 +178,7 @@ public class DataStore {
         return zsets.containsKey(key);
     }
 
-    public void addChannel(String clientId, String channel, OutputStream out){
+    public void subscribeChannel(String clientId, String channel, OutputStream out){
         if(!channelClients.containsKey(channel)) channelClients.put(channel, new HashMap<>());
         Map<String, OutputStream> clients = channelClients.get(channel);
         if(!clients.containsKey(clientId)) {
@@ -190,6 +190,18 @@ public class DataStore {
         if(!channels.containsKey(channel)) {
             channels.put(channel, channels.size()+1);
         }
+    }
+
+    public int unsubscribeChannel(String clientId, String channel) {
+        int count = clientChannels.get(clientId).size();
+
+        channelClients.get(channel).remove(clientId);
+        if(!clientChannels.get(clientId).containsKey(channel)) {
+            clientChannels.get(clientId).remove(channel);
+            return count;
+        }
+
+        return count - 1;
     }
 
     public int getSubCount(String clientId, String channel){

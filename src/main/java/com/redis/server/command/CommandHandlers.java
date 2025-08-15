@@ -735,7 +735,7 @@ public class CommandHandlers {
         if(!dataStore.isClientSubscribed(clientId)) dataStore.subscribeClient(clientId);
 
         String channel = command.get(1);
-        dataStore.addChannel(clientId, channel, out);
+        dataStore.subscribeChannel(clientId, channel, out);
         int count = dataStore.getSubCount(clientId, channel);
 
         writeArray(3, out);
@@ -763,5 +763,20 @@ public class CommandHandlers {
         List<OutputStream> clients = dataStore.getSubscribedClients(channel);
 
         for(OutputStream outputStream: clients) writeArray(publishMessage, outputStream);
+    }
+
+    public void handleUnsubscribe(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'UNSUBSCRIBE' command", out);
+            return;
+        }
+
+        String channel = command.get(1);
+        int res = dataStore.unsubscribeChannel(clientId, channel);
+
+        writeArray(3, out);
+        writeBulkString(RedisConstants.UNSUBSCRIBE.toLowerCase(), out);
+        writeBulkString(channel, out);
+        writeInteger(res, out);
     }
 }
