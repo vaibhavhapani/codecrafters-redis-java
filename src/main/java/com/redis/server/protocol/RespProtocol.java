@@ -41,6 +41,11 @@ public class RespProtocol {
         out.write((RedisConstants.ARRAY_PREFIX + length + RedisConstants.CRLF).getBytes());
     }
 
+    public static void writeArray(List<String> array, OutputStream out) throws IOException {
+        writeArray(array.size(), out);
+        for(String s: array) writeBulkString(s, out);
+    }
+
     public static void writeEntry(StreamEntry entry, OutputStream out) throws IOException {
         Map<String, String> fields = entry.getFields();
         writeInteger(2 * fields.size(), out);

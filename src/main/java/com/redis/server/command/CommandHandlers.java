@@ -735,7 +735,7 @@ public class CommandHandlers {
         if(!dataStore.isClientSubscribed(clientId)) dataStore.subscribeClient(clientId);
 
         String channel = command.get(1);
-        dataStore.addChannel(clientId, channel);
+        dataStore.addChannel(clientId, channel, out);
         int count = dataStore.getSubCount(clientId, channel);
 
         writeArray(3, out);
@@ -754,5 +754,14 @@ public class CommandHandlers {
         String message = command.get(2);
 
         writeInteger(dataStore.getSubscribedClientsCount(channel), out);
+
+        List<String> publishMessage = new ArrayList<>();
+        publishMessage.add(RedisConstants.message);
+        publishMessage.add(channel);
+        publishMessage.add(message);
+
+        List<OutputStream> clients = dataStore.getSubscribedClients(channel);
+
+        for(OutputStream outputStream: clients) writeArray(publishMessage, outputStream);
     }
 }

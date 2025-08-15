@@ -19,7 +19,7 @@ public class DataStore {
     private final ConcurrentHashMap<String, RedisSortedSet> zsets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Map<String, Integer>> clientChannels = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> clientSubStates = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, List<String>> channelClients = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Map<String, OutputStream>> channelClients = new ConcurrentHashMap<>();
     private final HashSet<String> allowedCommandsInSubMode = new HashSet<>() {
         {
             add("SUBSCRIBE");
@@ -178,15 +178,17 @@ public class DataStore {
         return zsets.containsKey(key);
     }
 
-    public void addChannel(String clientId, String channel){
-        if(!channelClients.containsKey(channel)) channelClients.put(channel, new ArrayList<>());
-        channelClients.get(channel).add(clientId);
+    public void addChannel(String clientId, String channel, OutputStream out){
+        if(!channelClients.containsKey(channel)) channelClients.put(channel, new HashMap<>());
+        Map<String, OutputStream> clients = channelClients.get(channel);
+        if(!clients.containsKey(clientId)) {
+            clients.put(clientId, out);
+        }
 
         if(!clientChannels.containsKey(clientId)) clientChannels.put(clientId, new HashMap<>());
-
-        Map<String, Integer> map = clientChannels.get(clientId);
-        if(!map.containsKey(channel)) {
-            map.put(channel, map.size()+1);
+        Map<String, Integer> channels = clientChannels.get(clientId);
+        if(!channels.containsKey(channel)) {
+            channels.put(channel, channels.size()+1);
         }
     }
 
@@ -195,11 +197,12 @@ public class DataStore {
     }
 
     public int getSubscribedClientsCount(String channel){
-        return channelClients.getOrDefault(channel, new ArrayList<>()).size();
+        return channelClients.getOrDefault(channel, new HashMap<>()).size();
     }
 
-    public List<String> getSubscribedClients(String channel) {
-        return channelClients.getOrDefault(channel, new ArrayList<>());
+    public List<OutputStream> getSubscribedClients(String channel) {
+        Map<String, OutputStream> clients = channelClients.getOrDefault(channel, Collections.emptyMap());
+        return new ArrayList<>(clients.values());
     }
 
     public boolean isClientSubscribed(String clientID) {

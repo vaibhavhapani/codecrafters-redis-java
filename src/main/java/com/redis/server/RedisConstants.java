@@ -60,6 +60,7 @@ public class RedisConstants {
     // Pub/Sub
     public static final String SUBSCRIBE = "SUBSCRIBE";
     public static final String PUBLISH = "PUBLISH";
+    public static final String message = "message";
 
     // Response messages
     public static final String PONG = "PONG";
