@@ -26,7 +26,7 @@ public class CommandHandlers {
     }
 
     public void handlePing(String clientId, List<String> command, OutputStream out) throws IOException {
-        if(dataStore.isClientSubscribed(clientId)){
+        if(dataStore.isClientSubscribed(clientId) && dataStore.isAllowedInSubMode(RedisConstants.PING)){
             writeArray(2, out);
             writeBulkString("pong", out);
             writeBulkString("", out);
@@ -42,7 +42,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isClientSubscribed(clientId)) {
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
             writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ECHO' command in subscribed mode", out);
             return;
         }
@@ -68,7 +68,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isClientSubscribed(clientId)) {
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
             writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'SET' command in subscribed mode", out);
             return;
         }
@@ -119,7 +119,7 @@ public class CommandHandlers {
             return;
         }
 
-        if(dataStore.isClientSubscribed(clientId)) {
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
             writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'GET' command in subscribed mode", out);
             return;
         }
@@ -735,12 +735,24 @@ public class CommandHandlers {
         if(!dataStore.isClientSubscribed(clientId)) dataStore.subscribeClient(clientId);
 
         String channel = command.get(1);
-        dataStore.addChannel(channel);
-        int count = dataStore.getSubCount(channel);
+        dataStore.addChannel(clientId, channel);
+        int count = dataStore.getSubCount(clientId, channel);
 
         writeArray(3, out);
         writeBulkString(RedisConstants.SUBSCRIBE.toLowerCase(), out);
         writeBulkString(channel, out);
         writeInteger(count, out);
+    }
+
+    public void handlePublish(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'PUBLISH' command", out);
+            return;
+        }
+
+        String channel = command.get(1);
+        String message = command.get(2);
+
+        writeInteger(dataStore.getSubscribedClientsCount(channel), out);
     }
 }

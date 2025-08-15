@@ -17,8 +17,9 @@ public class DataStore {
     private final ConcurrentHashMap<String, Boolean> clientMultiStates = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Queue<QueuedCommand>> clientQueuedCommands = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RedisSortedSet> zsets = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Integer> sub = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Map<String, Integer>> clientChannels = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> clientSubStates = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<String>> channelClients = new ConcurrentHashMap<>();
     private final HashSet<String> allowedCommandsInSubMode = new HashSet<>() {
         {
             add("SUBSCRIBE");
@@ -177,13 +178,28 @@ public class DataStore {
         return zsets.containsKey(key);
     }
 
-    public void addChannel(String channel){
-        int count = sub.containsKey(channel) ? sub.get(channel) : sub.size()+1;
-        sub.put(channel, count);
+    public void addChannel(String clientId, String channel){
+        if(!channelClients.containsKey(channel)) channelClients.put(channel, new ArrayList<>());
+        channelClients.get(channel).add(clientId);
+
+        if(!clientChannels.containsKey(clientId)) clientChannels.put(clientId, new HashMap<>());
+
+        Map<String, Integer> map = clientChannels.get(clientId);
+        if(!map.containsKey(channel)) {
+            map.put(channel, map.size()+1);
+        }
     }
 
-    public int getSubCount(String channel){
-        return sub.get(channel);
+    public int getSubCount(String clientId, String channel){
+        return clientChannels.get(clientId).get(channel);
+    }
+
+    public int getSubscribedClientsCount(String channel){
+        return channelClients.getOrDefault(channel, new ArrayList<>()).size();
+    }
+
+    public List<String> getSubscribedClients(String channel) {
+        return channelClients.getOrDefault(channel, new ArrayList<>());
     }
 
     public boolean isClientSubscribed(String clientID) {
