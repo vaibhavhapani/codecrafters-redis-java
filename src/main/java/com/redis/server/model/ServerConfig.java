@@ -14,6 +14,8 @@ import static com.redis.server.protocol.RespProtocol.writeBulkString;
 public class ServerConfig {
     private final int port;
     private final boolean isReplica;
+    private final String dir;
+    private final String dbFilename;
 
     // for master server
     private int masterOffset = 0;
@@ -25,9 +27,11 @@ public class ServerConfig {
     private final int masterPort;
     private int replicaOffset = 0;
 
-    public ServerConfig(int port, boolean isReplica, String masterHost, int masterPort) {
+    public ServerConfig(int port, boolean isReplica, String masterHost, int masterPort, String dir, String dbFilename) {
         this.port = port;
         this.isReplica = isReplica;
+        this.dir = dir;
+        this.dbFilename = dbFilename;
         this.masterHost = masterHost;
         this.masterPort = masterPort;
         this.replicas = new ConcurrentHashMap<>();
@@ -37,7 +41,15 @@ public class ServerConfig {
         return port;
     }
 
-// ********************************************************* master **********************************************************
+    public String getDir(){
+        return dir;
+    }
+
+    public String getDbFilename() {
+        return dbFilename;
+    }
+
+    // ********************************************************* master **********************************************************
 
     public boolean isMaster() {
         return !isReplica;

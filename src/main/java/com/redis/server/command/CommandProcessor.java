@@ -33,7 +33,7 @@ public class CommandProcessor {
                 handlers.handleEcho(clientId, command, out);
                 break;
             case RedisConstants.TYPE:
-                handlers.handleType(command, out);
+                handlers.handleType(clientId, command, out);
                 break;
             case RedisConstants.SET:
                 handlers.handleSet(clientId, command, out);
@@ -42,31 +42,31 @@ public class CommandProcessor {
                 handlers.handleGet(clientId, command, out);
                 break;
             case RedisConstants.RPUSH:
-                handlers.handleRPush(command, out);
+                handlers.handleRPush(clientId, command, out);
                 break;
             case RedisConstants.LPUSH:
-                handlers.handleLPush(command, out);
+                handlers.handleLPush(clientId, command, out);
                 break;
             case RedisConstants.LRANGE:
-                handlers.handleLRange(command, out);
+                handlers.handleLRange(clientId, command, out);
                 break;
             case RedisConstants.LLEN:
-                handlers.handleLLen(command, out);
+                handlers.handleLLen(clientId, command, out);
                 break;
             case RedisConstants.LPOP:
-                handlers.handleLPop(command, out);
+                handlers.handleLPop(clientId, command, out);
                 break;
             case RedisConstants.BLPOP:
-                handlers.handleBLPop(command, out);
+                handlers.handleBLPop(clientId, command, out);
                 break;
             case RedisConstants.XADD:
-                handlers.handleXAdd(command, out);
+                handlers.handleXAdd(clientId, command, out);
                 break;
             case RedisConstants.XRANGE:
-                handlers.handleXRange(command, out);
+                handlers.handleXRange(clientId, command, out);
                 break;
             case RedisConstants.XREAD:
-                handlers.handleXRead(command, out);
+                handlers.handleXRead(clientId, command, out);
                 break;
             case RedisConstants.INCR:
                 handlers.handleIncr(clientId, command, out);
@@ -93,22 +93,22 @@ public class CommandProcessor {
                 handlers.handleWait(clientId, command, out);
                 break;
             case RedisConstants.ZADD:
-                handlers.handleZadd(command, out);
+                handlers.handleZadd(clientId, command, out);
                 break;
             case RedisConstants.ZRANK:
-                handlers.handleZrank(command, out);
+                handlers.handleZrank(clientId, command, out);
                 break;
             case RedisConstants.ZRANGE:
-                handlers.handleZrange(command, out);
+                handlers.handleZrange(clientId, command, out);
                 break;
             case RedisConstants.ZCARD:
-                handlers.handleZcard(command, out);
+                handlers.handleZcard(clientId, command, out);
                 break;
             case RedisConstants.ZSCORE:
-                handlers.handleZscore(command, out);
+                handlers.handleZscore(clientId, command, out);
                 break;
             case RedisConstants.ZREM:
-                handlers.handleZrem(command, out);
+                handlers.handleZrem(clientId, command, out);
                 break;
             case RedisConstants.SUBSCRIBE:
                 handlers.handleSubscribe(clientId, command, out);
@@ -118,6 +118,9 @@ public class CommandProcessor {
                 break;
             case RedisConstants.UNSUBSCRIBE:
                 handlers.handleUnsubscribe(clientId, command, out);
+                break;
+            case RedisConstants.CONFIG:
+                handlers.handleConfig(clientId, command, out);
                 break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);

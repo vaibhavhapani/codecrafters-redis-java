@@ -51,9 +51,14 @@ public class CommandHandlers {
         writeBulkString(arg, out);
     }
 
-    public void handleType(List<String> command, OutputStream out) throws IOException {
+    public void handleType(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'TYPE' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'TYPE' command in subscribed mode", out);
             return;
         }
 
@@ -137,9 +142,14 @@ public class CommandHandlers {
         writeBulkString(value, out);
     }
 
-    public void handleLPush(List<String> command, OutputStream out) throws IOException {
+    public void handleLPush(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'LPUSH' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'LPUSH' command in subscribed mode", out);
             return;
         }
 
@@ -157,9 +167,14 @@ public class CommandHandlers {
         blockingManager.notifyBlockedClients(key);
     }
 
-    public void handleRPush(List<String> command, OutputStream out) throws IOException {
+    public void handleRPush(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'RPUSH' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'RPUSH' command in subscribed mode", out);
             return;
         }
 
@@ -177,9 +192,14 @@ public class CommandHandlers {
         blockingManager.notifyBlockedClients(key);
     }
 
-    public void handleLRange(List<String> command, OutputStream out) throws IOException {
+    public void handleLRange(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'LRANGE' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'LRANGE' command in subscribed mode", out);
             return;
         }
 
@@ -211,9 +231,14 @@ public class CommandHandlers {
         }
     }
 
-    public void handleLLen(List<String> command, OutputStream out) throws IOException {
+    public void handleLLen(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'LLEN' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'LLEN' command in subscribed mode", out);
             return;
         }
 
@@ -224,9 +249,14 @@ public class CommandHandlers {
         writeInteger(size, out);
     }
 
-    public void handleLPop(List<String> command, OutputStream out) throws IOException {
+    public void handleLPop(String clientId,List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'LPOP' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'LPOP' command in subscribed mode", out);
             return;
         }
 
@@ -256,9 +286,14 @@ public class CommandHandlers {
         }
     }
 
-    public void handleBLPop(List<String> command, OutputStream out) throws IOException {
+    public void handleBLPop(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'BLPOP' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'BLPOP' command in subscribed mode", out);
             return;
         }
 
@@ -283,9 +318,14 @@ public class CommandHandlers {
         blockingManager.addBlockedClient(key, timeOut, out);
     }
 
-    public void handleXAdd(List<String> command, OutputStream out) throws IOException {
+    public void handleXAdd(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 5) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XADD' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'XADD' command in subscribed mode", out);
             return;
         }
 
@@ -336,9 +376,14 @@ public class CommandHandlers {
         writeBulkString(newEntry.getId(), out);
     }
 
-    public void handleXRange(List<String> command, OutputStream out) throws IOException {
+    public void handleXRange(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XRANGE' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'XRANGE' command in subscribed mode", out);
             return;
         }
 
@@ -369,9 +414,14 @@ public class CommandHandlers {
         }
     }
 
-    public void handleXRead(List<String> command, OutputStream out) throws IOException {
+    public void handleXRead(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'XREAD' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'XREAD' command in subscribed mode", out);
             return;
         }
 
@@ -442,6 +492,11 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'INCR' command in subscribed mode", out);
+            return;
+        }
+
         if (dataStore.isMultiEnabled(clientId)) {
             dataStore.putCommandInQueue(clientId, command, out);
             writeSimpleString("QUEUED", out);
@@ -470,6 +525,12 @@ public class CommandHandlers {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'MULTI' command", out);
             return;
         }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'MULTI' command in subscribed mode", out);
+            return;
+        }
+
         dataStore.enableMulti(clientId);
         writeSimpleString("OK", out);
     }
@@ -477,6 +538,11 @@ public class CommandHandlers {
     public void handleExec(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'EXEC' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'EXEC' command in subscribed mode", out);
             return;
         }
 
@@ -513,6 +579,11 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'DISCARD' command in subscribed mode", out);
+            return;
+        }
+
         if (!dataStore.hasQueuedCommand(clientId)) {
             writeError("ERR DISCARD without MULTI", out);
             return;
@@ -525,6 +596,11 @@ public class CommandHandlers {
     public void handleInfo(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.isEmpty()) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'INFO' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'INFO' command in subscribed mode", out);
             return;
         }
 
@@ -608,6 +684,11 @@ public class CommandHandlers {
             return;
         }
 
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'WAIT' command in subscribed mode", out);
+            return;
+        }
+
         if (!serverConfig.hasReplicas()) {
             writeInteger(0, out);
             return;
@@ -639,9 +720,14 @@ public class CommandHandlers {
         writeInteger(serverConfig.getUpToDateReplicas(), out);
     }
 
-    public void handleZadd(List<String> command, OutputStream out) throws IOException {
+    public void handleZadd(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZADD' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZADD' command in subscribed mode", out);
             return;
         }
 
@@ -653,9 +739,14 @@ public class CommandHandlers {
         writeInteger(res, out);
     }
 
-    public void handleZrank(List<String> command, OutputStream out) throws IOException {
+    public void handleZrank(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZRANK' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZRANK' command in subscribed mode", out);
             return;
         }
 
@@ -672,9 +763,14 @@ public class CommandHandlers {
         writeInteger(rank, out);
     }
 
-    public void handleZrange(List<String> command, OutputStream out) throws IOException {
+    public void handleZrange(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 4) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZRANGE' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZRANK' command in subscribed mode", out);
             return;
         }
 
@@ -688,9 +784,14 @@ public class CommandHandlers {
         for(String s: members) writeBulkString(s, out);
     }
 
-    public void handleZcard(List<String> command, OutputStream out) throws IOException {
+    public void handleZcard(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 2) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZCARD' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZCARD' command in subscribed mode", out);
             return;
         }
 
@@ -700,9 +801,14 @@ public class CommandHandlers {
         writeInteger(cardinality, out);
     }
 
-    public void handleZscore(List<String> command, OutputStream out) throws IOException {
+    public void handleZscore(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZSCORE' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZSCORE' command in subscribed mode", out);
             return;
         }
 
@@ -713,9 +819,14 @@ public class CommandHandlers {
         writeBulkString(String.valueOf(score), out);
     }
 
-    public void handleZrem(List<String> command, OutputStream out) throws IOException {
+    public void handleZrem(String clientId, List<String> command, OutputStream out) throws IOException {
         if (command.size() < 3) {
             writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'ZREM' command", out);
+            return;
+        }
+
+        if(dataStore.isClientSubscribed(clientId) && !dataStore.isAllowedInSubMode(command.get(1))) {
+            writeError(RedisConstants.ERR_CAN_NOT_EXECUTE + " 'ZREM' command in subscribed mode", out);
             return;
         }
 
@@ -778,5 +889,25 @@ public class CommandHandlers {
         writeBulkString(RedisConstants.UNSUBSCRIBE.toLowerCase(), out);
         writeBulkString(channel, out);
         writeInteger(res, out);
+    }
+
+    public void handleConfig(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 3 || !command.get(1).equals(RedisConstants.GET)) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'CONFIG' command", out);
+            return;
+        }
+
+        String arg = command.get(2);
+        List<String> res = new ArrayList<>();
+
+        if(RedisConstants.DIR_ARG.substring(2).equals(arg)) {
+            res.add(RedisConstants.DIR_ARG.substring(2));
+            res.add(serverConfig.getDir());
+        } else if (RedisConstants.DB_FILENAME_ARG.substring(2).equals(arg)) {
+            res.add(RedisConstants.DB_FILENAME_ARG.substring(2));
+            res.add(serverConfig.getDbFilename());
+        }
+
+        writeArray(res, out);
     }
 }

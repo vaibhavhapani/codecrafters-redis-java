@@ -4,6 +4,8 @@ public class RedisConstants {
     public static final String PORT_ARG = "--port";
     public static final int DEFAULT_PORT = 6379;
     public static final String IS_REPLICA_OF_ARG = "--replicaof";
+    public static final String DIR_ARG = "--dir";
+    public static final String DB_FILENAME_ARG = "--dbfilename";
 
     public static final long TIMEOUT_CHECK_INTERVAL = 50; // ms
     public static final int BLOCKED_CLIENTS_INITIAL_CAPACITY = 5;
@@ -62,6 +64,8 @@ public class RedisConstants {
     public static final String PUBLISH = "PUBLISH";
     public static final String message = "message";
     public static final String UNSUBSCRIBE = "UNSUBSCRIBE";
+    // RDB Persistence
+    public static final String CONFIG = "CONFIG";
 
     // Response messages
     public static final String PONG = "PONG";

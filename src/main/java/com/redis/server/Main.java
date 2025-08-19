@@ -9,6 +9,8 @@ public class Main {
         String masterHost = null;
         int masterPort = -1;
         boolean isReplica = false;
+        String dir = "";
+        String dbfilename = "";
 
         for (int i = 0; i < len; i++) {
             switch (args[i]) {
@@ -30,10 +32,24 @@ public class Main {
                         i++;
                     }
                     break;
+
+                case RedisConstants.DIR_ARG:
+                    if (i + 1 < len) {
+                        dir = args[i+1];
+                        i++;
+                    }
+                    break;
+
+                case RedisConstants.DB_FILENAME_ARG:
+                    if(i+1 < len) {
+                        dbfilename = args[i+1];
+                        i++;
+                    }
+                    break;
             }
         }
 
-        ServerConfig serverConfig = new ServerConfig(port, isReplica, masterHost, masterPort);
+        ServerConfig serverConfig = new ServerConfig(port, isReplica, masterHost, masterPort, dir, dbfilename);
         RedisServer server = new RedisServer(serverConfig);
         server.start();
     }
