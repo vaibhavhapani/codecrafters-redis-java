@@ -134,7 +134,12 @@ public class RdbParser {
 
             System.out.println("RDB: Loading key '" + key + "' = '" + value + "'");
 
-            dataStore.set(key, value);
+            if (expireTime > 0) {
+                dataStore.set(key, value, expireTime);
+                System.out.println("RDB: Key '" + key + "' expires at " + expireTime);
+            } else {
+                dataStore.set(key, value);
+            }
         }
     }
 
