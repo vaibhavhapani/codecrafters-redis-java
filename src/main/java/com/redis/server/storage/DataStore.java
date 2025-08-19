@@ -31,14 +31,18 @@ public class DataStore {
         }
     };
 
-    public void setValue(String key, String value) {
+    public void set(String key, String value) {
         store.put(key, value);
         expiry.remove(key);
     }
 
-    public void setValue(String key, String value, long expiryTime) {
+    public void set(String key, String value, long expiryTime) {
         store.put(key, value);
         expiry.put(key, expiryTime);
+    }
+
+    public List<String> getAllKeys(){
+        return new ArrayList<>(store.keySet());
     }
 
     public String getValue(String key) {

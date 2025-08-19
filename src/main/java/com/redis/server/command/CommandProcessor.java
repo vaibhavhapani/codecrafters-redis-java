@@ -14,10 +14,8 @@ public class CommandProcessor {
 
     private final CommandHandlers handlers;
     private final DataStore dataStore;
-    private final ServerConfig serverConfig;
 
     public CommandProcessor(ServerConfig serverConfig, DataStore dataStore, BlockingOperationsManager blockingManager) {
-        this.serverConfig = serverConfig;
         this.dataStore = dataStore;
         this.handlers = new CommandHandlers(dataStore, blockingManager, serverConfig);
     }
@@ -121,6 +119,9 @@ public class CommandProcessor {
                 break;
             case RedisConstants.CONFIG:
                 handlers.handleConfig(clientId, command, out);
+                break;
+            case RedisConstants.KEYS:
+                handlers.handleKeys(clientId, command, out);
                 break;
             default:
                 RespProtocol.writeError((RedisConstants.ERR_UNKNOWN_COMMAND + commandName), out);

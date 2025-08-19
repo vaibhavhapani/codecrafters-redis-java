@@ -66,6 +66,7 @@ public class RedisConstants {
     public static final String UNSUBSCRIBE = "UNSUBSCRIBE";
     // RDB Persistence
     public static final String CONFIG = "CONFIG";
+    public static final String KEYS = "KEYS";
 
     // Response messages
     public static final String PONG = "PONG";

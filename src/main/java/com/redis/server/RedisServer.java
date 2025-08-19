@@ -4,6 +4,7 @@ import com.redis.server.blocking.BlockingOperationsManager;
 import com.redis.server.client.ClientHandler;
 import com.redis.server.command.CommandProcessor;
 import com.redis.server.model.ServerConfig;
+import com.redis.server.rdb.RdbParser;
 import com.redis.server.replication.ReplicaConnectionManager;
 import com.redis.server.storage.DataStore;
 
@@ -28,6 +29,7 @@ public class RedisServer {
     }
 
     public void start() {
+        if(serverConfig.getDir() != null) loadDatabase();
         startTimeoutChecker();
 
         if(serverConfig.isReplica()) connectToMasterAsync();
@@ -77,5 +79,12 @@ public class RedisServer {
                 System.err.println("Failed to connect to master: " + e.getMessage());
             }
         }).start();
+    }
+
+    private void loadDatabase() {
+        if (serverConfig.getDir() != null && serverConfig.getDbFilename() != null) {
+            RdbParser parser = new RdbParser(dataStore);
+            parser.loadRdbFile(serverConfig.getDir(), serverConfig.getDbFilename());
+        }
     }
 }

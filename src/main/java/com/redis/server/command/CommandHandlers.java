@@ -8,6 +8,9 @@ import com.redis.server.storage.DataStore;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static com.redis.server.protocol.RespProtocol.*;
@@ -101,9 +104,9 @@ public class CommandHandlers {
         if (command.size() >= 5 && "PX".equalsIgnoreCase(command.get(3))) {
             long expiryMs = Long.parseLong(command.get(4));
             long expiryTime = System.currentTimeMillis() + expiryMs;
-            dataStore.setValue(key, value, expiryTime);
+            dataStore.set(key, value, expiryTime);
         } else {
-            dataStore.setValue(key, value);
+            dataStore.set(key, value);
         }
 
         // System.out.println("Replica? " + serverConfig.isReplica() + " Set value: " + dataStore.getValue(key));
@@ -509,13 +512,13 @@ public class CommandHandlers {
         if (value != null) {
             try {
                 int incrValue = Integer.parseInt(value) + 1;
-                dataStore.setValue(key, String.valueOf(incrValue));
+                dataStore.set(key, String.valueOf(incrValue));
                 writeInteger(incrValue, out);
             } catch (NumberFormatException e) {
                 writeError("ERR value is not an integer or out of range", out);
             }
         } else {
-            dataStore.setValue(key, "1");
+            dataStore.set(key, "1");
             writeInteger(1, out);
         }
     }
@@ -909,5 +912,15 @@ public class CommandHandlers {
         }
 
         writeArray(res, out);
+    }
+
+    public void handleKeys(String clientId, List<String> command, OutputStream out) throws IOException {
+        if (command.size() < 2) {
+            writeError(RedisConstants.ERR_WRONG_NUMBER_ARGS + " 'CONFIG' command", out);
+            return;
+        }
+
+        List<String> keys = dataStore.getAllKeys();
+        writeArray(keys, out);
     }
 }

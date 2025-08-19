@@ -9,8 +9,8 @@ public class Main {
         String masterHost = null;
         int masterPort = -1;
         boolean isReplica = false;
-        String dir = "";
-        String dbfilename = "";
+        String dir = null;
+        String dbfilename = null;
 
         for (int i = 0; i < len; i++) {
             switch (args[i]) {
